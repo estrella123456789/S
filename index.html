@@ -511,7 +511,8 @@
     </div>
     <nav class="top-actions">
       <a class="btn" href="project.html">專案介紹與擴充規則</a>
-      <a class="btn" href="examples/rules-demo.json" download>下載內容範例</a>
+      <a class="btn" href="decks/showcase-20.html">AI 資安論文版</a>
+      <a class="btn" href="decks/01-design-atlas-20.html">Lumina 商業企劃版</a>
       <button type="button" class="btn btn-accent" id="downloadPptBtn">⬇ 下載可編輯 PPT (.pptx)</button>
       <a class="btn btn-primary" id="openDeckBtn" href="decks/studio-deck.html">全螢幕播放與 PDF →</a>
     </nav>
@@ -525,7 +526,7 @@
           <button type="button" class="btn" id="restoreExamplesBtn" style="padding:2px 7px;font-size:10px;display:none;">↺ 恢復範例</button>
         </div>
         <button type="button" class="btn import-solid-btn" id="openImportModalBtn">＋ 匯入資料 / 檔案生成簡報</button>
-        <div class="topic-stack" id="topicBar"></div>
+        <div class="topic-stack" id="topicBar"></div><p style="font-size:11px;line-height:1.5;color:var(--muted);margin:8px 0 0;">保留原有三份 20 頁示範；示範中的研究及商業數據不作為已查證事實，正式使用請以你的來源替換。</p>
       </section>
 
       <section class="ctrl-block">
@@ -538,7 +539,7 @@
 
       <section class="ctrl-block" style="flex:1;">
         <div class="ctrl-head">
-          <span>3. 切換本頁版面</span>
+          <span>3. 切換本頁版面（30 種）</span>
           <button type="button" class="btn" id="resetPageBtn" style="padding:2px 8px;font-size:10.5px;visibility:hidden;">還原版面</button>
         </div>
         <div class="layout-grid" id="layoutSwitcher"></div>
@@ -695,7 +696,7 @@
       const escapeText = (s) => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
       const state = {
-        topic: "rules-guide",
+        topic: "cafe-brand",
         template: "editorial-magazine",
         color: "cafe-terracotta",
         font: "serif-classic",
@@ -969,11 +970,11 @@
           `;
         }).join("");
 
-        const coreLayouts = SR.CORE_LAYOUTS || SR.COMPOUND_LAYOUTS.slice(0, 10);
+        const coreLayouts = SR.COMPOUND_LAYOUTS;
         layoutSwitcher.innerHTML = coreLayouts.map((l) => `
           <button type="button" class="layout-btn ${l.id === cur.mode ? "is-active" : ""}" data-layout="${l.id}" title="${l.desc}">
             <span class="layout-title">${l.label}</span>
-            <span class="layout-meta">${l.cat}</span>
+            <span class="layout-meta">${SR.CORE_LAYOUTS.some(core => core.id === l.id) ? "核心 · " : "延伸 · "}${l.cat}</span>
           </button>
         `).join("");
 

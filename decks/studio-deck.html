@@ -26,10 +26,10 @@
       const match = location.hash.match(/state=([^&]+)/);
       let fromHash = {};
       try { if (match) fromHash = read(decodeURIComponent(match[1])); } catch {}
-      const state = {topic:"rules-guide",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
+      const state = {topic:"cafe-brand",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
       const topicParam = new URLSearchParams(location.search).get("topic");
       if (topicParam) { state.topic = topicParam; state.page = 0; state.pageOverrides = {}; }
-      if (!SR.TOPICS.some(t=>t.id===state.topic)) state.topic="rules-guide";
+      if (!SR.TOPICS.some(t=>t.id===state.topic)) state.topic="cafe-brand";
       if (saved.topic !== state.topic) state.customHtmlByPage = {};
       const tpl = SR.getTemplate({templateId:state.template});
       state.template=tpl.tplId; state.color=tpl.colorId; state.font=tpl.fontId;
@@ -57,7 +57,7 @@
       const renderPanel=()=>{
         chips("sqTopics",SR.TOPICS,state.topic,t=>{state.topic=t.id;state.pageOverrides={};state.customHtmlByPage={};state.page=0;try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}location.href=`${location.pathname}#1`;location.reload();});
         chips("sqPresets",SR.STYLE_PRESETS,SR.STYLE_PRESETS.find(p=>p.templateId===state.template)?.id,p=>{state.template=p.templateId;state.color=p.colorId;state.font=p.fontId;state.customHtmlByPage={};reload();});
-        chips("sqLayouts",SR.CORE_LAYOUTS,plan[current()].mode,l=>{state.pageOverrides[current()]=l.id;delete state.customHtmlByPage[`${state.topic}_${current()}`];reload();});
+        chips("sqLayouts",SR.COMPOUND_LAYOUTS,plan[current()].mode,l=>{state.pageOverrides[current()]=l.id;delete state.customHtmlByPage[`${state.topic}_${current()}`];reload();});
       };
       button.addEventListener("click",()=>{renderPanel();panel.classList.toggle("is-open");button.setAttribute("aria-expanded",String(panel.classList.contains("is-open")));});
       window.addEventListener("hashchange",()=>{if(panel.classList.contains("is-open"))renderPanel();});

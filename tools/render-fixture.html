@@ -1,7 +1,7 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><style>html,body{margin:0;width:1280px;height:720px;overflow:hidden}*{box-sizing:border-box}</style><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet"></head><body><main id="slide"></main><script src="../engine/template-svgs.js"></script><script src="../engine/renderer.js"></script><script src="../engine/importer.js"></script><script>
 const q=new URLSearchParams(location.search),SR=window.SlideRenderer;
 const style=q.get('style')||'editorial-magazine';
-let plan=SR.getDeckPlan(style,{},q.get('topic')||'rules-guide');
+let plan=SR.getDeckPlan(style,{},q.get('topic')||'ai-security','../assets/');
 const layout=q.get('layout');
 let data=plan[Number(q.get('page'))||0];
 if(layout){data={mode:layout,title:'規則讓內容保持一致',num:layout.startsWith('cover-')?'01':'02',total:2,points:q.has('empty')?[]:[{title:'閱讀規範',desc:'確認風格、資料格式與檔案責任。'},{title:'整理來源',desc:'沒有來源的數字與圖片留空。'},{title:'套用版面',desc:'同類內容使用相同版面。'}]};if(layout==='matrix-table-split'&&!q.has('empty')){data.points=[];data.matrixTable={headers:['檔案','責任'],rows:[['AGENTS.md','開發規則'],['renderer.js','版面渲染'],['examples','內容資料']]};}}

@@ -1,5 +1,7 @@
 # DESIGN_CATALOG.md — 簡報美學風格、Design Tokens 與核心版面規格
 
+版面目錄共三十種：本文件詳述十種核心版面，其餘二十種延伸版面的 ID 與設計說明以 `engine/renderer.js` 的 `COMPOUND_LAYOUTS` 為準。工作室與放映頁皆開放完整目錄，不應以簡化版面取代原有設計。
+
 > 本文件為 **Slide Atelier** 的設計系統規格書，完整對應 `engine/renderer.js`、`engine/importer.js` 與 `index.html` 的實際實作。設計核心為**克制、一致、單一焦點與約 30%+ 呼吸留白**。
 
 ---

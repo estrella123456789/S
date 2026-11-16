@@ -1,0 +1,14 @@
+{
+  "ai-security": {
+    "pages": 20,
+    "sha256": "3e39c3bbed5fbb2ead81223374f32fa7a8c41dceeeed2b33cf7518c610fde6c3"
+  },
+  "cafe-brand": {
+    "pages": 20,
+    "sha256": "c627977224f034a1ff49b171a859745024ea393896233b51e6b103df323a9c3d"
+  },
+  "lumina-pitch": {
+    "pages": 20,
+    "sha256": "5e2c9730b7be6d0f6cddd5f00273f5dbfdcd906543f8e1d198248e1774b59ddf"
+  }
+}

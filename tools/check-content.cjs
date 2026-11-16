@@ -2,10 +2,18 @@
 const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
 const storage = new Map();
 const context = vm.createContext({window:{},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},console});
 for (const file of ['renderer.js','importer.js']) vm.runInContext(fs.readFileSync(`engine/${file}`,'utf8'),context);
 const {SlideRenderer:SR,SlideImporter:SI} = context.window;
+const demoDigests=JSON.parse(fs.readFileSync('tools/original-demo-digests.json','utf8'));
+assert.equal(SR.COMPOUND_LAYOUTS.length,30,'Keep all 30 distinct layout definitions');
+for(const [id,expected] of Object.entries(demoDigests)){
+  const originalPlan=SR.getDeckPlan('editorial-magazine',{},id);
+  assert.equal(originalPlan.length,20,'Keep all 20 pages');
+  assert.equal(crypto.createHash('sha256').update(JSON.stringify(originalPlan)).digest('hex'),expected.sha256,`Keep the complete original ${id} dataset`);
+}
 const imported = SI.parseRawContentToDeck(fs.readFileSync('examples/rules-demo.json','utf8'));
 assert.equal(imported.pages[0].points.length,0,'An empty cover must stay empty');
 assert.ok(imported.pages.every(p=>!p.image&&!p.kicker),'Optional content must stay absent');
@@ -28,8 +36,7 @@ for(const preset of SR.STYLE_PRESETS){
     for(const page of plan){
       const html=SR.renderSlideInner(preset.templateId,page);
       assert.ok(!/undefined|NaN/.test(html));
-      assert.ok(!/hero-pourover|cafe-space/.test(html));
-      assert.ok(page.points?.length<=4 || !page.points);
+      // Built-in examples retain their explicitly supplied photos and complete data.
     }
   }
   for(const layout of SR.CORE_LAYOUTS){
@@ -40,7 +47,7 @@ for(const preset of SR.STYLE_PRESETS){
 const bar=SR.renderSlideInner('editorial-magazine',{mode:'bars-insight-split',title:'Source values',num:'02',points:[{title:'Zero',stat:'0%'},{title:'Small',stat:'2%'},{title:'Unscaled',stat:'40'}]});
 assert.match(bar,/width:0%/);assert.match(bar,/width:2%/);assert.ok(!bar.includes('data-el="bar-2"'));
 const zeroTable=SR.renderSlideInner('editorial-magazine',{mode:'matrix-table-split',title:'Source table',num:'02',points:[],matrixTable:{headers:['Value'],rows:[[0]]}});
-assert.match(zeroTable,/>0<\/td>/,'Preserve numeric zero in tables');
+assert.match(zeroTable,/>0<\/(?:td|span)>/,'Preserve numeric zero in tables');
 const suppliedBars=SR.renderSlideInner('editorial-magazine',{mode:'bars-insight-split',title:'Supplied values',num:'02',points:[],r2Bars:[{name:'Exact value',val:0,desc:'Supplied zero'}]});
 assert.match(suppliedBars,/Exact value/);assert.match(suppliedBars,/Supplied zero/);
 const longText='A'.repeat(180)+' SOURCE_END';

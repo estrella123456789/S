@@ -10,6 +10,7 @@ const server=spawn('python',['-m','http.server','8769','--bind','127.0.0.1'],{cw
 const browser=spawn('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',['--headless=new','--disable-gpu','--no-first-run','--remote-debugging-port=9335',`--user-data-dir=${path.join(out,'edge-audit')}`],{windowsHide:true,stdio:'ignore'});
 let ws;
 const results={pages:[],errors:[],checks:[]};
+const uiOnly=process.argv.includes('--ui-only');
 try{
   let targets;
   for(let i=0;i<60;i++){try{targets=await(await fetch('http://127.0.0.1:9335/json/list')).json();if(targets.some(t=>t.type==='page'))break;}catch{}await delay(200);}
@@ -27,9 +28,10 @@ try{
   const screenshot=async(name)=>{const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(path.join(out,name),Buffer.from(shot.data,'base64'));};
   const geometry=()=>evaluate(`(()=>{const stage=document.querySelector('#slide>div');const bounds=stage.getBoundingClientRect();const issues=[];for(const el of stage.querySelectorAll('*')){if(!el.childNodes.length||!Array.from(el.childNodes).some(n=>n.nodeType===3&&n.textContent.trim()))continue;const r=el.getBoundingClientRect();if(r.left<bounds.left-1||r.top<bounds.top-1||r.right>bounds.right+1||r.bottom>bounds.bottom+1)issues.push({text:el.textContent.slice(0,70),reason:'outside stage'});if(el.clientHeight&&el.scrollHeight>el.clientHeight+2&&getComputedStyle(el).overflowY==='hidden')issues.push({text:el.textContent.slice(0,70),reason:'clipped'});}return issues;})()`);
   const styles=['editorial-magazine','botanical-line','academic-thesis','keynote-dark'];
-  const topics=[['rules-guide',5],['study-notes',4],['reading-notes',4]];
-  const layouts=['cover-centered','cover-split-photo','banner-3-rows','three-col-defense','dual-nested-stat','before-after-compare','bars-insight-split','matrix-table-split','horizontal-timeline','photo-story-split'];
-  for(const style of styles){
+  const topics=[['ai-security',20],['cafe-brand',20],['lumina-pitch',20]];
+  await navigate('.verification/render.html');
+  const layouts=await evaluate('window.SlideRenderer.COMPOUND_LAYOUTS.map(l=>l.id)');
+  for(const style of uiOnly?[]:styles){
     for(const [topic,count] of topics)for(let page=0;page<count;page++){
       await navigate(`.verification/render.html?style=${style}&topic=${topic}&page=${page}`);
       const issues=await geometry();results.pages.push({style,topic,page,issues});
@@ -48,7 +50,7 @@ try{
   await navigate('index.html');
   await evaluate('localStorage.clear();location.reload();true');await delay(500);
   await screenshot('studio-fixed.png');
-  results.checks.push({name:'studio default',pass:await evaluate('document.querySelector("#stageFrame").textContent.includes("讓下一份簡報")')});
+  results.checks.push({name:'original examples and 30 layouts in studio',pass:await evaluate('document.querySelectorAll("#topicBar [data-topic]").length===3 && document.querySelectorAll("#layoutSwitcher [data-layout]").length===30 && document.querySelector("#pageSelect").options.length===20')});
   const example=fs.readFileSync('examples/rules-demo.json','utf8');
   await evaluate(`document.querySelector('#openImportModalBtn').click();document.querySelector('#importTextInput').value=${JSON.stringify(example)};document.querySelector('#runImportBtn').click();true`);
   results.checks.push({name:'JSON import in UI',pass:await evaluate('document.querySelector("#pageSelect").options.length===3 && !document.querySelector("#importModal").classList.contains("is-open")')});
@@ -62,7 +64,7 @@ try{
   results.checks.push({name:'actual player count',pass:await evaluate('document.querySelectorAll(".slide").length===3 && document.querySelector(".hud-title").textContent.includes("3頁")')});
   await screenshot('player-fixed.png');
   await evaluate('document.querySelector("#studioPillToggle").click();true');
-  results.checks.push({name:'locked player controls',pass:await evaluate('document.querySelectorAll("#sqPresets button").length===4 && document.querySelectorAll("#sqLayouts button").length===10')});
+  results.checks.push({name:'4 locked styles and 30 player layouts',pass:await evaluate('document.querySelectorAll("#sqPresets button").length===4 && document.querySelectorAll("#sqLayouts button").length===30')});
   await evaluate('document.querySelector("#studioPillToggle").click();true');
   try{
     await evaluate(`(async()=>{await window.SlidePptxExporter.exportDeck({slideElements:Array.from(document.querySelectorAll('.slide')),deckTitle:'rules-demo-validation'});return true;})()`);
@@ -70,12 +72,16 @@ try{
     results.checks.push({name:'native PPTX download',pass:fs.readdirSync(path.join(out,'downloads')).some(n=>n.endsWith('.pptx'))});
   }catch(e){results.checks.push({name:'native PPTX download',pass:false,error:e.message});}
   await navigate('project.html');await screenshot('project-fixed.png');
+  for(const sample of ['editorial-proof','thesis-ct-mambarec']){
+    await navigate(`decks/${sample}.html`);await screenshot(`restored-${sample}.png`);
+    results.checks.push({name:`restored standalone ${sample}`,pass:await evaluate('document.body.innerText.length>100')});
+  }
   await send('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
   await navigate('index.html');await screenshot('studio-mobile.png');
   results.checks.push({name:'mobile no horizontal clipping',pass:await evaluate('document.documentElement.scrollWidth<=window.innerWidth+1')});
   await navigate('project.html');await screenshot('project-mobile.png');
   results.checks.push({name:'project mobile no horizontal clipping',pass:await evaluate('document.documentElement.scrollWidth<=window.innerWidth+1')});
-  fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify(results,null,2));
+  fs.writeFileSync(path.join(out,uiOnly?'browser-ui-results.json':'browser-results.json'),JSON.stringify(results,null,2));
   console.log(JSON.stringify({rendered:results.pages.length,geometryFailures:results.pages.filter(p=>p.issues.length),runtimeErrors:results.errors,checks:results.checks},null,2));
   if(results.errors.length||results.pages.some(p=>p.issues.length)||results.checks.some(c=>!c.pass))process.exitCode=1;
   await send('Browser.close');

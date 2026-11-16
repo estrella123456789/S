@@ -414,11 +414,11 @@ window.SlideImporter = (() => {
   function normalizeImportedDeck(rawDeck, titleHint) {
     const input = Array.isArray(rawDeck) ? rawDeck : rawDeck?.pages;
     if (!Array.isArray(input) || !input.length) throw new Error("JSON 必須包含非空的 pages 陣列。");
-    const allowedModes = new Set(["cover-centered","cover-split-photo","banner-3-rows","three-col-defense","dual-nested-stat","before-after-compare","bars-insight-split","matrix-table-split","horizontal-timeline","photo-story-split"]);
+    const allowedModes = new Set(window.SlideRenderer?.COMPOUND_LAYOUTS.map(l => l.id) || ["cover-centered","cover-split-photo","banner-3-rows","three-col-defense","dual-nested-stat","before-after-compare","bars-insight-split","matrix-table-split","horizontal-timeline","photo-story-split"]);
     const pages = input.flatMap((p, idx) => {
       if (!p || typeof p.title !== "string" || !p.title.trim()) throw new Error(`第 ${idx + 1} 頁缺少 title，請補上完整標題。`);
       if (p.title.length > 80) throw new Error(`第 ${idx + 1} 頁標題過長，請用完整的一句話整理標題，將詳細內容放進 points。`);
-      if (p.mode && !allowedModes.has(p.mode)) throw new Error(`第 ${idx + 1} 頁的 mode 不在十種核心版面內。`);
+      if (p.mode && !allowedModes.has(p.mode)) throw new Error(`第 ${idx + 1} 頁的 mode 不在版面目錄內。`);
       const points = Array.isArray(p.points) ? p.points.map(pt => typeof pt === "string" ? {title:pt} : ({...pt, num:pt.num || ""})) : [];
       const chunks = points.length ? chunkPointsForSlides(points) : [[]];
       return chunks.map((chunk, part) => ({
