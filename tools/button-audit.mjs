@@ -18,7 +18,7 @@ try{
  const waitFile=async(ext)=>{for(let i=0;i<100;i++){const files=fs.readdirSync(downloads).filter(n=>n.endsWith(ext));if(files.length)return path.join(downloads,files.sort((a,b)=>fs.statSync(path.join(downloads,b)).mtimeMs-fs.statSync(path.join(downloads,a)).mtimeMs)[0]);await delay(100);}throw Error(`No ${ext} download`);};
  await send('Page.enable');await send('Runtime.enable');await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:downloads});await send('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
  await nav('index.html?topic=cafe-brand');await ev('localStorage.clear();location.reload();true');await delay(500);
- await check('Format controls are disabled until selecting an element','document.querySelector("#elBold").disabled');
+ await check('Title is selected and formatting controls are immediately available','!document.querySelector("#elBold").disabled && !!document.querySelector("#stageFrame h1[data-edit-selected]")');
  await pick('#stageFrame h1');await check('Selecting text enables formatting','!document.querySelector("#elBold").disabled');
  await send('Input.insertText',{text:'AUDIT_EDIT'});await check('Text editing creates undo history','!document.querySelector("#edUndo").disabled');await click('#edUndo');await check('Undo restores original text','!document.querySelector("#stageFrame").textContent.includes("AUDIT_EDIT")');await click('#edRedo');await check('Redo restores edited text','document.querySelector("#stageFrame").textContent.includes("AUDIT_EDIT")');await pick('#stageFrame h1');
  const sansFont=await ev('Array.from(document.querySelector("#elFontFamily").options).find(o=>o.value.includes("Noto Sans TC")).value');

@@ -6,7 +6,7 @@
   <title>Slide Atelier — 互動式簡報設計工作室</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <script>window.addEventListener("DOMContentLoaded",()=>{const fontSheet=document.createElement("link");fontSheet.rel="stylesheet";fontSheet.href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap";document.head.append(fontSheet);},{once:true});</script>
   <style>
     :root {
       --bg: #f3efe7;
@@ -575,15 +575,26 @@
           <button type="button" class="ed-btn" id="edUndo" disabled title="復原上一步 (Ctrl+Z)">↶ 復原</button>
           <button type="button" class="ed-btn" id="edRedo" disabled title="重做 (Ctrl+Y)">↷ 重做</button>
           <span class="ed-sep"></span>
-          <select class="ed-select" id="elFontFamily" disabled title="元素字型">
+          <label class="ed-label" for="elTextTarget">修改</label>
+          <select class="ed-select" id="elTextTarget" aria-label="選擇要修改的文字" style="max-width:210px"></select>
+          <label class="ed-label" for="elFontFamily">字體</label>
+          <select class="ed-select" id="elFontFamily" disabled title="元素字型" aria-label="字體">
             <option value="">字型預設</option>
             <option value="'Noto Sans TC', 'Microsoft JhengHei', sans-serif">思源黑體</option>
             <option value="'Noto Serif TC', 'PMingLiU', Georgia, serif">思源宋體 (明體)</option>
             <option value="'Cormorant Garamond', 'Noto Serif TC', Georgia, serif">歐美襯線</option>
             <option value="'JetBrains Mono', Consolas, monospace">工程等寬體</option>
+            <option value="'Microsoft JhengHei', sans-serif">微軟正黑體</option>
+            <option value="'PMingLiU', serif">新細明體</option>
+            <option value="'DFKai-SB', 'BiauKai', serif">標楷體</option>
           </select>
-          <select class="ed-select" id="elFontSize" disabled title="文字大小">
+          <label class="ed-label" for="elFontSize">大小</label>
+          <select class="ed-select" id="elFontSize" disabled title="文字大小" aria-label="文字大小">
             <option value="">字號</option>
+            <option value="52px">52</option>
+            <option value="22px">22</option>
+            <option value="17px">17</option>
+            <option value="13px">13</option>
             <option value="14px">14</option>
             <option value="16px">16</option>
             <option value="18px">18</option>
@@ -754,6 +765,8 @@
 
       const edUndo = document.getElementById("edUndo");
       const edRedo = document.getElementById("edRedo");
+      const elTextTarget=document.getElementById("elTextTarget");
+      let textTargets=[];
       const elFontFamily = document.getElementById("elFontFamily");
       const elFontSize = document.getElementById("elFontSize");
       const elFontUp = document.getElementById("elFontUp");
@@ -866,6 +879,7 @@
           if (selectedEl.getAttribute("contenteditable") === "true") selectedEl.removeAttribute("contenteditable");
         }
         selectedEl = null;
+        elTextTarget.value="";
         typingHistoryElement = null;
         SELECTION_REQUIRED_CONTROLS.forEach((c) => {
           c.disabled = true;
@@ -901,7 +915,10 @@
         elBgColor.value = toHexInput(cs.backgroundColor, "#ffffff");
         elBorderColor.value = toHexInput(cs.borderTopColor, "#1d2626");
 
+        const family=cs.fontFamily.split(',')[0].replace(/["']/g,'').trim().toLowerCase();
+        elFontFamily.value=Array.from(elFontFamily.options).find(o=>o.value.split(',')[0].replace(/["']/g,'').trim().toLowerCase()===family)?.value || "";
         const curFs = `${Math.round(parseFloat(cs.fontSize) || 16)}px`;
+        if(!Array.from(elFontSize.options).some(o=>o.value===curFs))elFontSize.add(new Option(curFs.replace('px',''),curFs));
         elFontSize.value = Array.from(elFontSize.options).some((o) => o.value === curFs) ? curFs : "";
 
         const fw = parseInt(cs.fontWeight, 10);
@@ -926,9 +943,27 @@
         }
         SELECTION_REQUIRED_CONTROLS.forEach((c) => { c.disabled = false; });
         syncControlValuesFromSelected();
-        editorStatus.textContent = `選取 <${el.tagName.toLowerCase()}>（可拖拉 / 調整格式）`;
+        const idx=textTargets.indexOf(el);elTextTarget.value=idx<0?"":String(idx);
+        editorStatus.textContent = `正在修改：${el.textContent.trim().slice(0,24) || "物件"}`;
       }
 
+      function refreshTextTargets() {
+        textTargets=Array.from(stageFrame.querySelectorAll("h1,h2,h3,h4,p,strong,li,[data-content-path]"))
+          .filter(el=>!el.closest("svg") && el.textContent.trim() && !el.querySelector("h1,h2,h3,h4,p,strong,li,[data-content-path]"));
+        elTextTarget.replaceChildren(new Option("選擇要修改的文字", ""));
+        textTargets.forEach((el,i)=>{
+          const path=el.dataset.contentPath||"";
+          const label=path==="title"||el.matches("h1,h2")?"本頁標題":path==="sub"?"副標題":el.matches("h3,h4,strong")?"要點標題":"正文";
+          elTextTarget.add(new Option(`${label}｜${el.textContent.trim().slice(0,22)}`,String(i)));
+        });
+        const heading=stageFrame.querySelector('h1,h2');
+        if(heading)selectStageElement(heading,false);
+        else if(textTargets[0])selectStageElement(textTargets[0],false);
+      }
+      elTextTarget.addEventListener("change",()=>{
+        const index=Number(elTextTarget.value);
+        if(elTextTarget.value!=="" && textTargets[index])selectStageElement(textTargets[index],false);
+      });
       const sidebarEl = document.querySelector(".sidebar");
 
       function render() {
@@ -964,6 +999,7 @@
         }
         stageFrame.innerHTML = state.customHtmlByPage[key] || SR.renderSlideInner(recipe, cur);
         contentApi.bind(stageFrame, cur);
+        refreshTextTargets();
         elResetCustom.style.visibility = state.customHtmlByPage[key] ? "visible" : "hidden";
         syncUndoButtons();
         fitStage();
@@ -1113,6 +1149,11 @@
         selectStageElement(target, isLeafText);
       });
 
+      stageFrame.addEventListener("pointerup",e=>{
+        if(e.pointerType!=="touch")return;
+        const target=e.target.closest("[data-content-path],h1,h2,h3,h4,p,strong,li");
+        if(target && stageFrame.contains(target))selectStageElement(target,false);
+      });
       stageFrame.addEventListener("beforeinput", () => {
         if (selectedEl && typingHistoryElement !== selectedEl) {
           pushHistory();

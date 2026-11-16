@@ -80,6 +80,8 @@ node tools/check-content.cjs
 
 操作稽核可依序執行 `node tools/browser-audit.mjs --ui-only`、`python tools/build-audit-fixtures.py`、`node tools/button-audit.mjs`。前一步產生可供重新匯入驗證的 PPTX，測試產物都存於不發布的 `.verification/`。
 
+字體、大小與字色：開啟頁面會先選取標題，工具可立即使用。也可在工具列的「修改」選單選擇某段正文或要點，再調整格式，不必先在縮小的舞台上點中那段字。選單顯示目前字體與字級，包含專案實際使用的 13、17、22、32、52 字級。格式變更保存在本機；換風格或版面會重新套用該設計。
+
 
 ## 使用自己的 PDF：紫微斗數全書
 
