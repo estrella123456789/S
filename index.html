@@ -490,6 +490,19 @@
       color: #ffffff;
     }
   </style>
+  <style>
+    @media(max-width:760px){
+      html,body{height:auto;min-height:100vh;overflow:auto;display:block}
+      .topbar{height:auto;min-height:50px;padding:12px;flex-wrap:wrap;align-items:flex-start}
+      .brand{width:100%}.top-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .top-actions .btn{white-space:normal;text-align:center;line-height:1.5;padding:8px}
+      .workspace{display:flex;flex-direction:column;height:auto;overflow:visible}
+      .sidebar{width:100%;max-height:320px;overflow:auto;border-right:0;border-bottom:1px solid var(--border)}
+      .stage-area{width:100%;min-width:0;overflow:visible;padding:12px}
+      .stage-bar,.nav-group,.editor-row{flex-wrap:wrap;min-width:0}.page-select{max-width:180px}
+      .stage-viewport{height:260px;min-height:260px}.editor-ribbon{overflow:visible}
+    }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -498,7 +511,7 @@
     </div>
     <nav class="top-actions">
       <a class="btn" href="project.html">專案介紹與擴充規則</a>
-      <a class="btn" href="decks/01-design-atlas-20.html">Lumina 商業企劃版</a>
+      <a class="btn" href="examples/rules-demo.json" download>下載內容範例</a>
       <button type="button" class="btn btn-accent" id="downloadPptBtn">⬇ 下載可編輯 PPT (.pptx)</button>
       <a class="btn btn-primary" id="openDeckBtn" href="decks/studio-deck.html">全螢幕播放與 PDF →</a>
     </nav>
@@ -679,9 +692,10 @@
       const SR = window.SlideRenderer;
       if (window.SlideImporter) window.SlideImporter.registerAllIntoRenderer(SR);
       const STORAGE_KEY = "slide_atelier_v6_state";
+      const escapeText = (s) => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
       const state = {
-        topic: "cafe-brand",
+        topic: "rules-guide",
         template: "editorial-magazine",
         color: "cafe-terracotta",
         font: "serif-classic",
@@ -890,6 +904,12 @@
       function render() {
         const prevScroll = sidebarEl ? sidebarEl.scrollTop : 0;
         clearSelection();
+        const hiddenNow = window.SlideImporter?.getHiddenExampleIds() || [];
+        const firstVisible = SR.TOPICS.find(t => !hiddenNow.includes(t.id));
+        if (firstVisible && !SR.TOPICS.some(t => t.id === state.topic && !hiddenNow.includes(t.id))) {
+          state.topic = firstVisible.id;
+          state.page = 0;
+        }
         const recipe = currentRecipe();
         const plan = SR.getDeckPlan(recipe, state.pageOverrides, state.topic, "./assets/");
         if (state.page >= plan.length) state.page = 0;
@@ -903,7 +923,7 @@
 
         pageSelect.innerHTML = plan.map((s, idx) => {
           const prefix = idx === 0 ? "封面" : String(idx).padStart(2, "0");
-          return `<option value="${idx}" ${idx === state.page ? "selected" : ""}>${prefix} · ${s.title}</option>`;
+          return `<option value="${idx}" ${idx === state.page ? "selected" : ""}>${prefix} · ${escapeText(s.title)}</option>`;
         }).join("");
         const layoutObj = SR.COMPOUND_LAYOUTS.find((l) => l.id === cur.mode);
         stageModeLabel.textContent = layoutObj ? `${layoutObj.label} (${cur.mode})` : cur.mode;
@@ -923,7 +943,7 @@
             <div class="topic-row">
               <button type="button" class="topic-btn ${t.id === state.topic ? "is-active" : ""}" data-topic="${t.id}">
                 <span class="topic-badge ${isCustom ? "is-custom" : ""}">${isCustom ? "自訂" : "範例"}</span>
-                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.label}</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeText(t.label)}</span>
               </button>
               <button type="button" class="topic-del-btn" data-delete-topic="${t.id}" title="刪除此來源">✕</button>
             </div>
@@ -1046,11 +1066,9 @@
         selectStageElement(target, isLeafText);
       });
 
-      let typingTimer = null;
       stageFrame.addEventListener("input", () => {
         if (!selectedEl) return;
-        clearTimeout(typingTimer);
-        typingTimer = setTimeout(() => { saveCustomStageHtml(); }, 250);
+        saveCustomStageHtml();
       });
 
       // Undo / Redo Actions
@@ -1509,22 +1527,12 @@
       const fillSampleMdBtn = document.getElementById("fillSampleMdBtn");
       if (fillSampleMdBtn) {
         fillSampleMdBtn.addEventListener("click", () => {
-          importTitleInput.value = "台北獨立咖啡館探索筆記";
+          importTitleInput.value = "用規則延伸簡報";
           importTextInput.value = [
-            "## 為什麼探索台北獨立咖啡館？",
-            "- 空間氛圍多元：結合老宅翻修、木質採光與安靜閱讀角落",
-            "- 烘焙風味清晰：淺中焙單品與手沖萃取呈現產區花果調",
-            "- 適合遠端工作：具備穩定插座、Wi-Fi 與不限時座位設計",
-            "",
-            "## 精選店家數據比較",
-            "- 興波咖啡：世界冠軍手沖，綜合評分 95 分",
-            "- 沛洛瑟珈琲店：自家精準烘焙，風味表現 92 分",
-            "- 珈琲部：深夜營業至凌晨，安靜指數 90 分",
-            "",
-            "## 實地探店記錄流程",
-            "- 步驟一：建立地區與交通動線清單",
-            "- 步驟二：實測採光、桌面高度與插座密度",
-            "- 步驟三：紀錄豆單烘焙度與手沖風味筆記"
+            "## 先定規則，再新增內容", "- 閱讀規範：確認風格與資料格式。",
+            "- 整理來源：沒有來源的數字與圖片留空。", "- 套用版面：同類內容使用相同版面。", "",
+            "## 新增內容沿用同一套流程", "- 建立資料：參考範例建立 JSON。",
+            "- 匯入預覽：匯入資料並選擇鎖定風格。", "- 檢查成果：逐頁確認文字與對齊。"
           ].join("\n");
           importStatusMsg.style.color = "#0f5257";
           importStatusMsg.textContent = "✅ 已載入結構化示範大綱，點擊右下角「解析並套用」即可生成簡報！";
@@ -1536,6 +1544,7 @@
         try {
           const deck = window.SlideImporter.importAndRegister(SR, importTextInput.value, importTitleInput.value.trim());
           state.topic = deck.id;
+          state.customHtmlByPage = {};
           state.page = 0;
           state.pageOverrides = {};
           setImportModalOpen(false);

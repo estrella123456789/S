@@ -1,0 +1,7 @@
+.verification/
+node_modules/
+submission-upload.zip
+*.log
+Thumbs.db
+# Legacy exported files are not source content for the public assignment.
+decks/*.pptx

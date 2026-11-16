@@ -137,20 +137,9 @@ window.SlideImporter = (() => {
     return Number.isFinite(n) ? n : null;
   }
 
-  function trimAtBoundary(str, maxLen = 160) {
-    const clean = String(str || "").replace(/\s+/g, " ").trim();
-    if (clean.length <= maxLen) return clean;
-    const head = clean.slice(0, maxLen);
-    for (let i = head.length - 1; i >= Math.floor(maxLen * 0.5); i--) {
-      if ("。！？；，、.!?;,".includes(head[i])) {
-        return head.slice(0, i + 1).replace(/[，、,;]+$/, "").trim();
-      }
-    }
-    const lastSpace = head.lastIndexOf(" ");
-    if (lastSpace > Math.floor(maxLen * 0.5)) {
-      return head.slice(0, lastSpace).trim();
-    }
-    return head.trim() + "…";
+  function trimAtBoundary(str, _maxLen = 160) {
+    // Never discard source text to meet a presentation limit.
+    return String(str || "").replace(/\s+/g, " ").trim();
   }
 
   function splitIntoSections(rawText) {
@@ -316,7 +305,7 @@ window.SlideImporter = (() => {
           const metric = extractMetricToken(p);
           const { title, desc } = splitLineToTitleAndDesc(p);
           return {
-            num: String(idx + 1).padStart(2, "0"),
+            num: "",
             title,
             stat: metric,
             statLabel: metric ? "關鍵數據" : "",
@@ -331,7 +320,7 @@ window.SlideImporter = (() => {
       const metric = extractMetricToken(line);
       const { title, desc } = splitLineToTitleAndDesc(line);
       return {
-        num: String(idx + 1).padStart(2, "0"),
+        num: "",
         title,
         stat: metric,
         statLabel: metric ? "關鍵數據" : "",
@@ -342,24 +331,38 @@ window.SlideImporter = (() => {
   }
 
   function chunkPointsForSlides(points) {
-    const n = points.length;
-    if (n <= 4) return [points];
-    const numSlides = Math.ceil(n / 4);
-    const base = Math.floor(n / numSlides);
-    const rem = n % numSlides;
-    const chunks = [];
-    let offset = 0;
-    for (let i = 0; i < numSlides; i++) {
-      const size = base + (i < rem ? 1 : 0);
-      chunks.push(
-        points.slice(offset, offset + size).map((pt, idx) => ({
-          ...pt,
-          num: String(idx + 1).padStart(2, "0")
-        }))
-      );
-      offset += size;
+    const size = p => Array.from(`${p.title || ""}${p.desc || ""}${p.action || ""}`).length;
+    const sentences = value => {
+      const text = String(value || "");
+      if (text.length <= 160) return text ? [text] : [];
+      const parts = text.match(/[^。！？!?]+[。！？!?]*/g) || [text];
+      if (parts.some(part => part.length > 220)) {
+        throw new Error("有一段內容過長且缺少完整句子的分隔。請先依語意補上句號或整理成較短要點；原文未被截斷。");
+      }
+      return parts;
+    };
+    const expanded = points.flatMap(pt => {
+      if (size(pt) <= 180) return [pt];
+      const fragments=[];
+      for (const key of ["title","desc","action"]) {
+        for (const sentence of sentences(pt[key])) {
+          const last=fragments[fragments.length-1];
+          if (last && !last[key] && size(last)+sentence.length<=180) last[key]=sentence;
+          else fragments.push({title:"",desc:"",action:"",[key]:sentence});
+        }
+      }
+      if (!fragments.length) return [pt];
+      fragments[0]={...pt,...fragments[0]};
+      return fragments;
+    });
+    const chunks=[];
+    let current=[],chars=0;
+    for (const pt of expanded) {
+      if (current.length && (current.length>=4 || chars+size(pt)>180)) {chunks.push(current);current=[];chars=0;}
+      current.push(pt);chars+=size(pt);
     }
-    return chunks;
+    if (current.length) chunks.push(current);
+    return chunks.length ? chunks : [[]];
   }
 
   function buildStructuredExtras(sec, points, mode) {
@@ -371,21 +374,6 @@ window.SlideImporter = (() => {
       r2Bars: null
     };
 
-    if (mode === "bars-insight-split" || mode === "vertical-columns-split" || mode === "donut-kpi-cards") {
-      const barPoints = points.slice(0, 4);
-      const nums = barPoints.map((pt) => extractRealNumber(`${pt.stat} ${pt.desc} ${pt.title}`));
-      if (barPoints.length > 0 && nums.every((n) => n !== null)) {
-        const maxVal = Math.max(...nums);
-        const allPercentScale = maxVal <= 100;
-        extras.r2Bars = barPoints.map((pt, i) => ({
-          name: pt.title,
-          val: allPercentScale
-            ? Math.min(100, Math.max(1, Math.round(nums[i])))
-            : Math.max(5, Math.round((nums[i] / (maxVal || 1)) * 100)),
-          desc: pt.desc || pt.action || ""
-        }));
-      }
-    }
 
     if (mode === "dual-nested-stat" || mode === "before-after-compare") {
       const mid = Math.ceil(points.length / 2);
@@ -424,53 +412,31 @@ window.SlideImporter = (() => {
   }
 
   function normalizeImportedDeck(rawDeck, titleHint) {
-    const pages = Array.isArray(rawDeck) ? rawDeck : rawDeck.pages;
-    if (!Array.isArray(pages) || !pages.length) throw new Error("JSON 內找不到 pages 陣列");
-    const chapters = Array.isArray(rawDeck.chapters) && rawDeck.chapters.length === 5
-      ? rawDeck.chapters
-      : ["核心主題", "現況脈絡", "方法架構", "重點數據", "結論行動"];
-    const normalizedPages = pages.slice(0, 20).map((p, idx) => {
-      const image = p.image || "";
-      const mode = p.mode || (idx === 0 ? (image ? "cover-split-photo" : "cover-centered") : "banner-3-rows");
-      const points = Array.isArray(p.points) && p.points.length
-        ? p.points.map((pt, j) => ({
-            num: pt.num || String(j + 1).padStart(2, "0"),
-            title: pt.title || "",
-            stat: pt.stat || "",
-            statLabel: pt.statLabel || "",
-            desc: pt.desc || "",
-            action: pt.action || ""
-          }))
-        : [{ num: "01", title: p.title || "", stat: "", statLabel: "", desc: "", action: "" }];
-      const chIdx = typeof p.chapterIdx === "number" ? Math.max(0, Math.min(4, p.chapterIdx)) : Math.min(4, Math.floor((idx / Math.max(1, pages.length)) * 5));
-      const firstStat = points[0]?.stat || "";
-      return {
-        mode,
-        chapterIdx: chIdx,
-        chapter: p.chapter || chapters[chIdx],
-        kicker: p.kicker || (idx === 0 ? "IMPORTED PRESENTATION" : `${String(idx).padStart(2, "0")} · ${chapters[chIdx]}`),
-        title: p.title || `簡報第 ${idx + 1} 頁`,
-        sub: p.sub || "",
-        summary: p.summary || "",
-        highlightStat: p.highlightStat || (firstStat ? { value: firstStat, label: points[0]?.title || "", desc: "" } : { value: "", label: "", desc: "" }),
-        points,
-        image,
-        dualGroups: p.dualGroups || null,
-        modelNodes: p.modelNodes || null,
-        scaleNodes: p.scaleNodes || null,
-        matrixTable: p.matrixTable || null,
-        r2Bars: p.r2Bars || null
-      };
+    const input = Array.isArray(rawDeck) ? rawDeck : rawDeck?.pages;
+    if (!Array.isArray(input) || !input.length) throw new Error("JSON 必須包含非空的 pages 陣列。");
+    const allowedModes = new Set(["cover-centered","cover-split-photo","banner-3-rows","three-col-defense","dual-nested-stat","before-after-compare","bars-insight-split","matrix-table-split","horizontal-timeline","photo-story-split"]);
+    const pages = input.flatMap((p, idx) => {
+      if (!p || typeof p.title !== "string" || !p.title.trim()) throw new Error(`第 ${idx + 1} 頁缺少 title，請補上完整標題。`);
+      if (p.title.length > 80) throw new Error(`第 ${idx + 1} 頁標題過長，請用完整的一句話整理標題，將詳細內容放進 points。`);
+      if (p.mode && !allowedModes.has(p.mode)) throw new Error(`第 ${idx + 1} 頁的 mode 不在十種核心版面內。`);
+      const points = Array.isArray(p.points) ? p.points.map(pt => typeof pt === "string" ? {title:pt} : ({...pt, num:pt.num || ""})) : [];
+      const chunks = points.length ? chunkPointsForSlides(points) : [[]];
+      return chunks.map((chunk, part) => ({
+        ...p,
+        title: chunks.length > 1 ? `${p.title}（${part + 1}/${chunks.length}）` : p.title,
+        mode: p.mode || (idx === 0 ? (p.image ? "cover-split-photo" : "cover-centered") : "banner-3-rows"),
+        kicker: p.kicker || "", chapter: p.chapter || "", image: p.image || null,
+        sub: part === 0 ? (p.sub || "") : "",
+        summary: part === chunks.length-1 ? (p.summary || "") : "",
+        highlightStat: part === 0 ? (p.highlightStat || null) : null,
+        points: chunk
+      }));
     });
-    const deckTitle = rawDeck.title || titleHint || normalizedPages[0].title || "匯入簡報";
+    const title = (!Array.isArray(rawDeck) && rawDeck.title) || titleHint || pages[0].title;
     return {
-      id: rawDeck.id || `custom-${Date.now()}`,
-      isCustom: true,
-      label: `${trimAtBoundary(deckTitle, 24)}（自訂匯入・${normalizedPages.length}頁）`,
-      shortLabel: trimAtBoundary(deckTitle, 14),
-      count: normalizedPages.length,
-      chapters,
-      pages: normalizedPages
+      id: `custom-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+      isCustom:true, label:`${title}（自訂匯入・${pages.length}頁）`, shortLabel:title,
+      count:pages.length, chapters:rawDeck.chapters || [], pages
     };
   }
 
@@ -479,18 +445,16 @@ window.SlideImporter = (() => {
     if (!trimmed) throw new Error("請先貼上文字內容，或上傳檔案。");
 
     if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-      try {
-        const parsed = JSON.parse(trimmed);
-        return normalizeImportedDeck(parsed, titleHint);
-      } catch {
-        // Fallback to text parser if not valid JSON
-      }
+      let parsed;
+      try { parsed = JSON.parse(trimmed); }
+      catch { throw new Error("JSON 格式有誤，請檢查引號、逗號與括號。"); }
+      return normalizeImportedDeck(parsed, titleHint);
     }
 
     const rawSections = splitIntoSections(trimmed);
     // Filter out empty TOC-only sections (headings with 0 body lines) unless ALL sections are empty
     const nonEmptySections = rawSections.filter((s) => s.lines && s.lines.some((l) => l.trim().length > 0));
-    const sections = (nonEmptySections.length ? nonEmptySections : rawSections).slice(0, 19);
+    const sections = (nonEmptySections.length ? nonEmptySections : rawSections);
     const deckTitle = trimAtBoundary(titleHint || sections[0].title || "自訂主題簡報", 160);
     const chapters = [];
     for (let i = 0; i < 5; i++) {
@@ -503,7 +467,7 @@ window.SlideImporter = (() => {
     const coverPoints = (coverCandidates.length ? coverCandidates : sections).slice(0, 3).map((s, idx) => {
       const secMetric = extractMetricToken(s.lines.join(" "));
       return {
-        num: String(idx + 1).padStart(2, "0"),
+        num: "",
         title: trimAtBoundary(s.title, 160),
         stat: secMetric,
         statLabel: secMetric ? "關鍵數據" : "",
@@ -514,13 +478,13 @@ window.SlideImporter = (() => {
     pages.push({
       mode: "cover-centered",
       chapterIdx: 0,
-      chapter: chapters[0],
-      kicker: "CUSTOM CONTENT BRIEF",
+      chapter: "",
+      kicker: "",
       title: deckTitle,
       sub: "",
       summary: "",
       highlightStat: { value: "", label: "", desc: "" },
-      points: coverPoints.length ? coverPoints : [{ num: "01", title: deckTitle, stat: "", statLabel: "", desc: "", action: "" }],
+      points: [],
       image: ""
     });
 
@@ -553,14 +517,12 @@ window.SlideImporter = (() => {
         pages.push({
           mode,
           chapterIdx: chIdx,
-          chapter: chapters[chIdx],
+          chapter: "",
           kicker: "",
           title: slideTitle,
           sub: chunkIdx === 0 ? sub : "",
           summary: chunkIdx === chunks.length - 1 ? summary : "",
-          highlightStat: chunkMetric
-            ? { value: chunkMetric, label: slideTitle, desc: "" }
-            : { value: "", label: "", desc: "" },
+          highlightStat: null,
           points: chunkPoints,
           image: "",
           ...extras
@@ -568,15 +530,7 @@ window.SlideImporter = (() => {
       });
     });
 
-    return {
-      id: `custom-${Date.now()}`,
-      isCustom: true,
-      label: `${trimAtBoundary(deckTitle, 24)}（自訂匯入・${pages.length}頁）`,
-      shortLabel: trimAtBoundary(deckTitle, 14),
-      count: pages.length,
-      chapters,
-      pages
-    };
+    return normalizeImportedDeck({title:deckTitle,chapters,pages},titleHint);
   }
 
   function loadSavedCustomTopics() {
@@ -593,7 +547,7 @@ window.SlideImporter = (() => {
   function saveCustomTopics(topics) {
     try {
       localStorage.setItem(CUSTOM_TOPICS_KEY, JSON.stringify(topics));
-    } catch {}
+    } catch { throw new Error("瀏覽器儲存空間不足，請先備份內容並清理舊資料後重試。"); }
   }
 
   function getHiddenExampleIds() {
@@ -637,8 +591,7 @@ window.SlideImporter = (() => {
     const deck = parseRawContentToDeck(rawText, titleHint);
     const saved = loadSavedCustomTopics().filter((t) => t.id !== deck.id);
     saved.unshift(deck);
-    const trimmed = saved.slice(0, 8);
-    saveCustomTopics(trimmed);
+    saveCustomTopics(saved);
     if (SR && typeof SR.registerCustomTopic === "function") {
       SR.registerCustomTopic(deck);
     }
@@ -646,43 +599,14 @@ window.SlideImporter = (() => {
   }
 
   function getAiPromptTemplate() {
-    return `請幫我把以下原始資料整理成 Slide Atelier 支援的 Canonical Slide Content JSON（繁體中文），直接輸出純 JSON：
-規則：
-- 每頁使用「結論式標題」，直接點出核心洞察，不要只寫名詞標籤。
-- 每頁 points 建議 2～4 點；若同一主題超過 4 點，請拆成多頁（例如「標題（1/2）」、「標題（2/2）」）。
-- kicker、sub、summary、stat、statLabel、action、image 皆為選填：若無真實內容或原文未提供，請直接留空字串 ""，嚴禁編造任何數字、百分比或假標籤。
-- 封面若無專屬圖片請使用 "cover-centered" 並將 image 設為 ""。
-
-{
-  "title": "簡報總標題（一句話點出核心結論）",
-  "chapters": ["章節一", "章節二", "章節三", "章節四", "章節五"],
-  "pages": [
-    {
-      "mode": "cover-centered",
-      "chapterIdx": 0,
-      "kicker": "選填，無則留空",
-      "title": "封面結論式主標題",
-      "sub": "選填，一句副標題說明核心價值（不與 points 重複）",
-      "image": "",
-      "points": [
-        { "num": "01", "title": "重點一", "stat": "", "statLabel": "", "desc": "簡短說明", "action": "" },
-        { "num": "02", "title": "重點二", "stat": "", "statLabel": "", "desc": "簡短說明", "action": "" }
-      ]
-    },
-    {
-      "mode": "bars-insight-split",
-      "chapterIdx": 1,
-      "kicker": "",
-      "title": "結論式內頁標題（例如：導入自動化後處理時間縮短 42%）",
-      "sub": "",
-      "summary": "選填，整頁一句核心總結（不與 points 重複，可用 **重點** 強調）",
-      "image": "",
-      "points": [
-        { "num": "01", "title": "真實指標項目", "stat": "42%", "statLabel": "效率提升", "desc": "具體事實說明", "action": "選填，若無明確行動項目請留空" }
-      ]
-    }
-  ]
-}`;
+    return `請先讀取 AGENTS.md，根據我提供的原文輸出純 JSON：
+- 外層使用 {"title":"簡報標題","pages":[]}。
+- 每頁必須有 title；同類內容用相同版面。
+- 每頁最多四個要點，每個要點約三十字；過長就依完整語意拆頁，不截斷句子。
+- 沒有來源的數字、圖片與選填欄位留空；不要填入假指標、個人資料或佔位標籤。
+- 無圖片的封面用 cover-centered，條列內頁用 banner-3-rows。
+- 其他允許的 mode：cover-split-photo、three-col-defense、dual-nested-stat、before-after-compare、bars-insight-split、matrix-table-split、horizontal-timeline、photo-story-split。
+- 參考 examples/rules-demo.json 的結構，請使用我提供的實際內容。`;
   }
 
   return {

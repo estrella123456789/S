@@ -8,8 +8,8 @@ Slide Atelier 是一個以規則驅動的網頁簡報工作室。我將簡報的
 
 ## 繳交連結
 
-- GitHub Repository：發布後貼上你的 Repository 網址。
-- 網頁成果：貼上 GitHub Settings → Pages 顯示的公開網址。
+- GitHub Repository：https://github.com/estrella123456789/S
+- 網頁成果：https://estrella123456789.github.io/S/
 - 規則文件：Repository 內的 AGENTS.md。
 
 ## 如何讓 AI 繼續新增內容
@@ -18,7 +18,7 @@ AGENTS.md 定義檔案分工、四套鎖定風格、十種核心版面，以及 
 
 ## 發布步驟（不需安裝工具）
 
-1. 登入 GitHub，建立 Public Repository，名稱可用 slide-atelier。
+1. 登入 GitHub，開啟既有 Repository：https://github.com/estrella123456789/S 。
 2. 在 Repository 選 Add file → Upload files，把本專案內容上傳到根目錄。index.html 必須在根目錄，engine、assets 等資料夾須保留。不要上傳 ZIP 本身。
 3. 提交檔案後，開 Settings → Pages。
 4. Source 選 Deploy from a branch，Branch 選 main，資料夾選 / (root)，按 Save。

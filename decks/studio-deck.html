@@ -1,62 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>20 頁簡報放映 — Slide Atelier V5</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../engine/stage.css" />
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Slide Atelier｜簡報放映</title>
+  <link rel="stylesheet" href="../engine/stage.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
   <style>
-    .studio-quick-pill { position: fixed; top: 14px; right: 16px; z-index: 80; font-family: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif; }
-    .studio-pill-btn {
-      appearance: none; background: rgba(15, 23, 42, 0.86); backdrop-filter: blur(10px);
-      color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 999px;
-      padding: 8px 15px; font-size: 12.5px; font-weight: 700; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
-    }
-    .studio-pill-btn:hover { background: #0d4f4f; }
-    .studio-pill-dot { width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; }
-    .studio-quick-panel {
-      position: absolute; top: calc(100% + 8px); right: 0; width: 390px; max-height: 78vh; overflow-y: auto;
-      background: rgba(15, 23, 42, 0.96); backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 14px; padding: 14px;
-      color: #f8fafc; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); display: none;
-    }
-    .studio-quick-panel.is-open { display: block; }
-    .sq-label { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 10.5px; color: #94a3b8; margin: 0 0 6px; display: flex; justify-content: space-between; align-items: center; }
-    .sq-group { margin-bottom: 12px; }
-    .sq-group:last-child { margin-bottom: 0; }
-    .sq-grid { display: flex; flex-wrap: wrap; gap: 5px; }
-    .sq-chip {
-      appearance: none; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.14);
-      color: #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 11px; cursor: pointer;
-    }
-    .sq-chip.is-active { background: #2E9B68; border-color: #6EE7B7; color: #fff; font-weight: 700; }
-    @media print { .studio-quick-pill { display: none !important; } }
+    #studioQuickPill{position:fixed;right:16px;top:16px;z-index:1000;font:14px system-ui,sans-serif}#studioPillToggle{padding:10px 16px;background:#fffdf9;color:#1d2626;border:1px solid #d7cebc;border-radius:8px;cursor:pointer}#studioQuickPanel{display:none;max-width:min(420px,90vw);max-height:75vh;overflow:auto;background:#fffdf9;color:#1d2626;padding:24px;border:1px solid #d7cebc;border-radius:8px;margin-top:8px}#studioQuickPanel.is-open{display:block}.sq-label{font-weight:700;margin:16px 0 8px}.sq-grid{display:flex;gap:8px;flex-wrap:wrap}.sq-chip{padding:8px;border:1px solid #d7cebc;background:#fff;color:#1d2626;cursor:pointer;border-radius:4px}.sq-chip.is-active{background:#0d4f4f;color:#fff}.sq-help{font-size:13px;line-height:1.6;color:#5d6a6a}@media print{#studioQuickPill{display:none}}
   </style>
 </head>
 <body>
-  <div class="studio-quick-pill" id="studioQuickPill">
-    <button type="button" class="studio-pill-btn" id="studioPillToggle">
-      <span class="studio-pill-dot"></span>
-      <span>換主題 / 模板 / 配色 / 字體 / 版面</span>
-    </button>
-    <div class="studio-quick-panel" id="studioQuickPanel">
-      <div class="sq-group"><div class="sq-label"><span>簡報主題 (3)</span></div><div class="sq-grid" id="sqTopics"></div></div>
-      <div class="sq-group"><div class="sq-label"><span>模板骨架 (6)</span></div><div class="sq-grid" id="sqTemplates"></div></div>
-      <div class="sq-group"><div class="sq-label"><span>配色方案 (8)</span></div><div class="sq-grid" id="sqColors"></div></div>
-      <div class="sq-group"><div class="sq-label"><span>字體搭配 (4)</span></div><div class="sq-grid" id="sqFonts"></div></div>
-      <div class="sq-group">
-        <div class="sq-label"><span>切換本頁版面 (30 · 內容不變)</span><button type="button" class="sq-chip" id="sqResetPage" style="padding:2px 7px;font-size:10px;display:none;">還原預設</button></div>
-        <div class="sq-grid" id="sqLayouts"></div>
-      </div>
-    </div>
-  </div>
-
-  <main class="deck" id="studioDeck" data-deck-title="Slide Atelier 20 頁簡報"></main>
-
+  <div id="studioQuickPill"><button type="button" id="studioPillToggle" aria-expanded="false">簡報設定</button><div id="studioQuickPanel"><div class="sq-label">主題</div><div id="sqTopics" class="sq-grid"></div><div class="sq-label">整份簡報風格</div><div id="sqPresets" class="sq-grid"></div><div class="sq-label">本頁版面</div><div id="sqLayouts" class="sq-grid"></div><p class="sq-help">每套風格包含固定的色彩與字體。變更風格或版面會重新套用設計；舞台上的自訂編修請先確認保存。</p></div></div>
+  <main class="deck" id="studioDeck"></main>
   <script src="../engine/template-svgs.js"></script>
   <script src="../engine/renderer.js"></script>
   <script src="../engine/pptx-exporter.js"></script>
@@ -64,109 +19,49 @@
   <script>
     (() => {
       const SR = window.SlideRenderer;
-      if (window.SlideImporter) window.SlideImporter.registerAllIntoRenderer(SR);
-      const STORAGE_KEY = "slide_atelier_v6_state";
-      const ASSET_BASE = "../assets/";
-      const state = {
-        topic: "cafe-brand",
-        template: "editorial-magazine",
-        color: "cafe-terracotta",
-        font: "serif-classic",
-        page: 0,
-        pageOverrides: {}
-      };
-
-      try {
-        const hm = location.hash.match(/state=([^&]+)/);
-        const raw = hm ? decodeURIComponent(hm[1]) : localStorage.getItem(STORAGE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed.topic && SR.TOPICS.some((t) => t.id === parsed.topic)) state.topic = parsed.topic;
-          if (parsed.template && SR.MASTER_TEMPLATES.some((t) => t.id === parsed.template)) {
-            state.template = parsed.template;
-            const tplObj = SR.MASTER_TEMPLATES.find((t) => t.id === state.template);
-            if (tplObj && !parsed.color) state.color = tplObj.defaultColor;
-            if (tplObj && !parsed.font) state.font = tplObj.defaultFont;
-          }
-          if (parsed.color && SR.COLOR_PALETTES.some((c) => c.id === parsed.color)) state.color = parsed.color;
-          if (parsed.font && SR.FONT_PAIRINGS.some((f) => f.id === parsed.font)) state.font = parsed.font;
-          if (typeof parsed.page === "number") state.page = Math.max(0, Math.min(19, parsed.page));
-          if (parsed.pageOverrides && typeof parsed.pageOverrides === "object") state.pageOverrides = parsed.pageOverrides;
-        }
-      } catch {}
-
-      if (location.hash.includes("state=") && state.page > 0) {
-        try { history.replaceState(null, "", `#${state.page + 1}`); } catch {}
-      }
-
-      const recipe = () => ({ templateId: state.template, colorId: state.color, fontId: state.font });
-      const deckEl = document.getElementById("studioDeck");
-      const updateTitle = () => {
-        const tpl = SR.getTemplate(recipe());
-        const top = SR.TOPICS.find((t) => t.id === state.topic) || SR.TOPICS[0];
-        const text = `${top.shortLabel || top.label} · ${tpl.name} (20頁)`;
-        deckEl.dataset.deckTitle = text;
-        const hudTitle = document.querySelector(".hud-title");
-        if (hudTitle) hudTitle.textContent = text;
-      };
-
-      SR.render20Slides(deckEl, recipe(), state.pageOverrides, state.topic, ASSET_BASE);
-      updateTitle();
-
-      const getCurIdx = () => Math.max(0, Array.from(deckEl.querySelectorAll(".slide")).findIndex((s) => s.classList.contains("is-active")));
-      const toggleBtn = document.getElementById("studioPillToggle");
-      const quickPanel = document.getElementById("studioQuickPanel");
-      const sqTopics = document.getElementById("sqTopics");
-      const sqTemplates = document.getElementById("sqTemplates");
-      const sqColors = document.getElementById("sqColors");
-      const sqFonts = document.getElementById("sqFonts");
-      const sqLayouts = document.getElementById("sqLayouts");
-      const sqResetPage = document.getElementById("sqResetPage");
-
-      function renderQuickPanel() {
-        const curIdx = getCurIdx();
-        const plan = SR.getDeckPlan(recipe(), state.pageOverrides, state.topic, ASSET_BASE);
-        const curMode = plan[curIdx]?.mode || "dual-nested-stat";
-        sqTopics.innerHTML = SR.TOPICS.map((t) => `<button type="button" class="sq-chip ${t.id === state.topic ? "is-active" : ""}" data-topic="${t.id}">${t.shortLabel || t.label}</button>`).join("");
-        sqTemplates.innerHTML = SR.MASTER_TEMPLATES.map((tpl) => `<button type="button" class="sq-chip ${tpl.id === state.template ? "is-active" : ""}" data-template="${tpl.id}">${tpl.name}</button>`).join("");
-        sqColors.innerHTML = SR.COLOR_PALETTES.map((c) => `<button type="button" class="sq-chip ${c.id === state.color ? "is-active" : ""}" data-color="${c.id}">${c.name}</button>`).join("");
-        sqFonts.innerHTML = SR.FONT_PAIRINGS.map((f) => `<button type="button" class="sq-chip ${f.id === state.font ? "is-active" : ""}" data-font="${f.id}">${f.name}</button>`).join("");
-        sqLayouts.innerHTML = SR.COMPOUND_LAYOUTS.map((l) => `<button type="button" class="sq-chip ${l.id === curMode ? "is-active" : ""}" data-layout="${l.id}">${l.label}</button>`).join("");
-        sqResetPage.style.display = state.pageOverrides[curIdx] ? "inline-flex" : "none";
-      }
-
-      function refreshDeckLive() {
-        const plan = SR.getDeckPlan(recipe(), state.pageOverrides, state.topic, ASSET_BASE);
-        Array.from(deckEl.querySelectorAll(".slide")).forEach((slideEl, idx) => {
-          const data = plan[idx];
-          if (data) slideEl.innerHTML = `${SR.renderSlideInner(recipe(), data)}<aside class="notes">第 ${data.num} 頁（版面：${data.mode}）— ${data.title}。</aside>`;
-        });
-        updateTitle();
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            topic: state.topic, template: state.template, color: state.color, font: state.font, page: getCurIdx(), pageOverrides: state.pageOverrides
-          }));
-        } catch {}
-        renderQuickPanel();
-      }
-
-      toggleBtn.addEventListener("click", (e) => { e.stopPropagation(); renderQuickPanel(); quickPanel.classList.toggle("is-open"); });
-      document.addEventListener("click", (e) => { if (!e.target.closest("#studioQuickPill")) quickPanel.classList.remove("is-open"); });
-      sqTopics.addEventListener("click", (e) => { const b = e.target.closest("button[data-topic]"); if (b) { state.topic = b.dataset.topic; state.pageOverrides = {}; refreshDeckLive(); } });
-      sqTemplates.addEventListener("click", (e) => {
-        const b = e.target.closest("button[data-template]");
-        if (b) {
-          state.template = b.dataset.template;
-          const tplObj = SR.MASTER_TEMPLATES.find((t) => t.id === state.template);
-          if (tplObj) { state.color = tplObj.defaultColor; state.font = tplObj.defaultFont; }
-          refreshDeckLive();
-        }
+      const KEY = "slide_atelier_v6_state";
+      window.SlideImporter.registerAllIntoRenderer(SR);
+      const read = (raw) => { try { return JSON.parse(raw || "{}"); } catch { return {}; } };
+      const saved = read(localStorage.getItem(KEY));
+      const match = location.hash.match(/state=([^&]+)/);
+      let fromHash = {};
+      try { if (match) fromHash = read(decodeURIComponent(match[1])); } catch {}
+      const state = {topic:"rules-guide",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
+      const topicParam = new URLSearchParams(location.search).get("topic");
+      if (topicParam) { state.topic = topicParam; state.page = 0; state.pageOverrides = {}; }
+      if (!SR.TOPICS.some(t=>t.id===state.topic)) state.topic="rules-guide";
+      if (saved.topic !== state.topic) state.customHtmlByPage = {};
+      const tpl = SR.getTemplate({templateId:state.template});
+      state.template=tpl.tplId; state.color=tpl.colorId; state.font=tpl.fontId;
+      const recipe={templateId:state.template};
+      const deck=document.getElementById("studioDeck");
+      const plan=SR.getDeckPlan(recipe,state.pageOverrides,state.topic,"../assets/");
+      const initialHash = /^#\d+$/.test(location.hash) ? Number(location.hash.slice(1))-1 : Number(state.page)||0;
+      state.page=Math.max(0,Math.min(plan.length-1,initialHash));
+      history.replaceState(null,"",`${location.pathname}#${state.page+1}`);
+      const top=SR.TOPICS.find(t=>t.id===state.topic);
+      deck.dataset.deckTitle=`${top.shortLabel} · ${tpl.name}（${plan.length}頁）`;
+      plan.forEach((data,i)=>{
+        const slide=document.createElement("section"); slide.className="slide";
+        slide.innerHTML=state.customHtmlByPage[`${state.topic}_${i}`] || SR.renderSlideInner(recipe,data);
+        const notes=document.createElement("aside");notes.className="notes";notes.textContent=data.title;slide.append(notes);deck.append(slide);
       });
-      sqColors.addEventListener("click", (e) => { const b = e.target.closest("button[data-color]"); if (b) { state.color = b.dataset.color; refreshDeckLive(); } });
-      sqFonts.addEventListener("click", (e) => { const b = e.target.closest("button[data-font]"); if (b) { state.font = b.dataset.font; refreshDeckLive(); } });
-      sqLayouts.addEventListener("click", (e) => { const b = e.target.closest("button[data-layout]"); if (b) { state.pageOverrides[getCurIdx()] = b.dataset.layout; refreshDeckLive(); } });
-      sqResetPage.addEventListener("click", () => { delete state.pageOverrides[getCurIdx()]; refreshDeckLive(); });
-      window.addEventListener("hashchange", () => { if (quickPanel.classList.contains("is-open")) renderQuickPanel(); });
+      const current=()=>Math.max(0,Array.from(deck.children).findIndex(s=>s.classList.contains("is-active")));
+      const save=()=>{state.page=current();try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
+      window.addEventListener("hashchange",save);
+      // Changes made during playback survive returning to the studio.
+      deck.addEventListener("input",e=>{const slide=e.target.closest(".slide");if(!slide)return;const clone=slide.cloneNode(true);clone.querySelectorAll(".notes").forEach(n=>n.remove());clone.querySelectorAll("[contenteditable]").forEach(n=>n.removeAttribute("contenteditable"));state.customHtmlByPage[`${state.topic}_${Array.from(deck.children).indexOf(slide)}`]=clone.innerHTML;save();});
+      const button=document.getElementById("studioPillToggle"),panel=document.getElementById("studioQuickPanel");
+      const chips=(id,items,selected,choose)=>{const host=document.getElementById(id);host.replaceChildren();items.forEach(item=>{const b=document.createElement("button");b.type="button";b.className=`sq-chip ${selected===item.id?"is-active":""}`;b.textContent=item.label||item.name;b.addEventListener("click",()=>choose(item));host.append(b);});};
+      const reload=()=>{save();location.reload();};
+      const renderPanel=()=>{
+        chips("sqTopics",SR.TOPICS,state.topic,t=>{state.topic=t.id;state.pageOverrides={};state.customHtmlByPage={};state.page=0;try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}location.href=`${location.pathname}#1`;location.reload();});
+        chips("sqPresets",SR.STYLE_PRESETS,SR.STYLE_PRESETS.find(p=>p.templateId===state.template)?.id,p=>{state.template=p.templateId;state.color=p.colorId;state.font=p.fontId;state.customHtmlByPage={};reload();});
+        chips("sqLayouts",SR.CORE_LAYOUTS,plan[current()].mode,l=>{state.pageOverrides[current()]=l.id;delete state.customHtmlByPage[`${state.topic}_${current()}`];reload();});
+      };
+      button.addEventListener("click",()=>{renderPanel();panel.classList.toggle("is-open");button.setAttribute("aria-expanded",String(panel.classList.contains("is-open")));});
+      window.addEventListener("hashchange",()=>{if(panel.classList.contains("is-open"))renderPanel();});
+      try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}
     })();
   </script>
   <script src="../engine/deck.js"></script>
