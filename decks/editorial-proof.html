@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>建築與出版的網格秩序 — 編輯美學對照示範</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../engine/stage.css" />
+  <style>
+    :root {
+      --paper: #f4f0e8;
+      --paper-deep: #eae3d5;
+      --ink: #171614;
+      --stone: #6b655d;
+      --obsidian: #141311;
+      --ivory: #efeae0;
+      --vermilion: #b8331b;
+      --hair: rgba(23, 22, 20, 0.18);
+      --hair-light: rgba(239, 234, 224, 0.22);
+      --serif: "Cormorant Garamond", "Noto Serif TC", Georgia, serif;
+      --sans: "Plus Jakarta Sans", "Noto Sans TC", sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+
+    .slide {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--sans);
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* Tactile archival paper grain (subtle SVG noise) */
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.045;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      z-index: 10;
+    }
+
+    .slide.is-obsidian {
+      background: var(--obsidian);
+      color: var(--ivory);
+    }
+
+    .folio-bar {
+      position: absolute;
+      top: 34px;
+      left: 64px;
+      right: 64px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--hair);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--stone);
+      z-index: 4;
+    }
+
+    .is-obsidian .folio-bar {
+      border-bottom-color: var(--hair-light);
+      color: rgba(239, 234, 224, 0.55);
+    }
+
+    .page-canvas {
+      position: relative;
+      z-index: 3;
+      width: 100%;
+      height: 100%;
+      padding: 96px 64px 56px;
+    }
+
+    .ed-display {
+      font-family: var(--serif);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .ed-sub {
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.68;
+      color: var(--stone);
+      margin: 0;
+      max-width: 58ch;
+    }
+
+    .is-obsidian .ed-sub {
+      color: rgba(239, 234, 224, 0.72);
+    }
+
+    .ed-index {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      color: var(--vermilion);
+      text-transform: uppercase;
+    }
+
+    .dropcap::first-letter {
+      font-family: var(--serif);
+      float: left;
+      font-size: 54px;
+      line-height: 0.85;
+      padding-right: 10px;
+      padding-top: 4px;
+      font-weight: 700;
+      color: var(--vermilion);
+    }
+
+    @keyframes subtleFade {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide.is-active .f-1 { animation: subtleFade 0.55s ease both; }
+    .slide.is-active .f-2 { animation: subtleFade 0.6s 0.1s ease both; }
+    .slide.is-active .f-3 { animation: subtleFade 0.65s 0.2s ease both; }
+  </style>
+</head>
+<body>
+  <main class="deck" data-deck-title="建築與出版的網格秩序 — 編輯美學對照示範">
+
+    <!-- 01. ARCHIVAL EDITORIAL COVER (Zero cards, zero pills) -->
+    <section class="slide">
+      <div class="folio-bar">
+        <span>MONOGRAPH NO. 04 — SPATIAL TYPOGRAPHY</span>
+        <span>TAIPEI · ZURICH / 2026</span>
+      </div>
+      <div class="page-canvas" style="display:grid; grid-template-columns:1.15fr 0.85fr; gap:56px; align-items:stretch;">
+        <div style="display:flex; flex-direction:column; justify-content:space-between; padding-top:24px;">
+          <div>
+            <div class="ed-index f-1" style="margin-bottom:22px;">I. ESSAY ON PROPORTION</div>
+            <h1 class="ed-display f-2" style="font-size:68px;">
+              建築與出版的<br/>網格秩序
+            </h1>
+            <p class="ed-sub f-3" style="margin-top:26px;">
+              當簡報不再模仿軟體介面，而是回到紙本書籍與瑞士平面海報的比例紀律——用極細線條、字級落差與留白建立呼吸感。
+            </p>
+          </div>
+          <div class="f-3" style="border-top:1px solid var(--hair); padding-top:16px; display:flex; justify-content:space-between; font-family:var(--mono); font-size:12px; color:var(--stone);">
+            <span>EDITORIAL SPECIMEN · 08 PLATES</span>
+            <span>PRESS [E] TO EDIT</span>
+          </div>
+        </div>
+
+        <!-- Architectural proportion study SVG -->
+        <div class="f-2" style="border-left:1px solid var(--hair); padding-left:48px; display:flex; flex-direction:column; justify-content:space-between;">
+          <svg viewBox="0 0 400 460" width="100%" height="100%" aria-hidden="true">
+            <!-- Outer frame -->
+            <rect x="16" y="16" width="368" height="428" fill="none" stroke="#171614" stroke-width="1"/>
+            <!-- Golden/modular subdivisions -->
+            <line x1="16" y1="280" x2="384" y2="280" stroke="#171614" stroke-width="0.75"/>
+            <line x1="244" y1="16" x2="244" y2="444" stroke="#171614" stroke-width="0.75"/>
+            <line x1="16" y1="148" x2="244" y2="148" stroke="#171614" stroke-width="0.6" stroke-dasharray="3 3"/>
+            <!-- Geometric circle & diagonal tension -->
+            <circle cx="244" cy="280" r="132" fill="none" stroke="#b8331b" stroke-width="1.2"/>
+            <circle cx="130" cy="148" r="56" fill="#eae3d5" stroke="#171614" stroke-width="0.75"/>
+            <line x1="16" y1="444" x2="384" y2="16" stroke="#171614" stroke-width="0.6" opacity="0.45"/>
+            <!-- Registration crosshairs -->
+            <g stroke="#b8331b" stroke-width="1">
+              <line x1="238" y1="280" x2="250" y2="280"/>
+              <line x1="244" y1="274" x2="244" y2="286"/>
+            </g>
+            <text x="28" y="42" font-family="IBM Plex Mono, monospace" font-size="10" fill="#6b655d">FIG. 01 — MODULAR PROPORTION 1:1.618</text>
+            <text x="256" y="428" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b8331b">AXIS B-04</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="notes">第 01 頁：純印刷雜誌封面，無任何圓角卡片或膠囊標籤，靠襯線大標與比例線圖撐出質感。</aside>
+    </section>
+
+    <!-- 02. HAIRLINE PRINT INDEX (Table of Contents without boxes) -->
+    <section class="slide">
+      <div class="folio-bar">
+        <span>PLATE 02 — CONTENTS</span>
+        <span>STRUCTURE &amp; RHYTHM</span>
+      </div>
+      <div class="page-canvas" style="display:grid; grid-template-columns:0.75fr 1.25fr; gap:64px; align-items:start; padding-top:116px;">
+        <div class="f-1">
+          <div class="ed-index" style="margin-bottom:16px;">INDEX</div>
+          <h2 class="ed-display" style="font-size:48px;">八頁建築感<br/>閱讀節奏</h2>
+          <p class="ed-sub" style="margin-top:20px; font-size:15px;">
+            拿掉多餘的色塊外框，只用 1px 細線與對齊基準線，讓視線順著紙張紋理自然移動。
+          </p>
+        </div>
+        <div class="f-2" style="display:flex; flex-direction:column;">
+          <div style="border-top:1px solid var(--ink); border-bottom:1px solid var(--hair); padding:20px 0; display:grid; grid-template-columns:56px 1fr auto; align-items:baseline; gap:16px;">
+            <span style="font-family:var(--mono); font-size:13px; color:var(--vermilion);">01</span>
+            <div><strong style="font-family:var(--serif); font-size:24px;">留白是牆面，不是空地</strong><div style="font-size:13px; color:var(--stone); margin-top:4px;">高反差深黑引言頁與視覺停頓</div></div>
+            <span style="font-family:var(--mono); font-size:12px; color:var(--stone);">P. 03</span>
+          </div>
+          <div style="border-bottom:1px solid var(--hair); padding:20px 0; display:grid; grid-template-columns:56px 1fr auto; align-items:baseline; gap:16px;">
+            <span style="font-family:var(--mono); font-size:13px; color:var(--stone);">02</span>
+            <div><strong style="font-family:var(--serif); font-size:24px;">三欄報刊式長文與首字下沉</strong><div style="font-size:13px; color:var(--stone); margin-top:4px;">不依賴方框的純文字層級示範</div></div>
+            <span style="font-family:var(--mono); font-size:12px; color:var(--stone);">P. 04</span>
+          </div>
+          <div style="border-bottom:1px solid var(--hair); padding:20px 0; display:grid; grid-template-columns:56px 1fr auto; align-items:baseline; gap:16px;">
+            <span style="font-family:var(--mono); font-size:13px; color:var(--stone);">03</span>
+            <div><strong style="font-family:var(--serif); font-size:24px;">Tufte 極簡斜率對比圖</strong><div style="font-size:13px; color:var(--stone); margin-top:4px;">零網格雜訊的純線條數據敘事</div></div>
+            <span style="font-family:var(--mono); font-size:12px; color:var(--stone);">P. 05</span>
+          </div>
+          <div style="border-bottom:1px solid var(--hair); padding:20px 0; display:grid; grid-template-columns:56px 1fr auto; align-items:baseline; gap:16px;">
+            <span style="font-family:var(--mono); font-size:13px; color:var(--stone);">04</span>
+            <div><strong style="font-family:var(--serif); font-size:24px;">包浩斯幾何構圖標本</strong><div style="font-size:13px; color:var(--stone); margin-top:4px;">62% 圖面與 38% 旁註欄對位</div></div>
+            <span style="font-family:var(--mono); font-size:12px; color:var(--stone);">P. 06</span>
+          </div>
+          <div style="border-bottom:1px solid var(--ink); padding:20px 0; display:grid; grid-template-columns:56px 1fr auto; align-items:baseline; gap:16px;">
+            <span style="font-family:var(--mono); font-size:13px; color:var(--stone);">05</span>
+            <div><strong style="font-family:var(--serif); font-size:24px;">展覽議程表與書籍版權頁</strong><div style="font-size:13px; color:var(--stone); margin-top:4px;">克制的收尾與空間平衡</div></div>
+            <span style="font-family:var(--mono); font-size:12px; color:var(--stone);">P. 07–08</span>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">第 02 頁：純細線構成的目錄頁，完全不用任何卡片盒。</aside>
+    </section>
+
+    <!-- 03. OBSIDIAN FULL-BLEED PULL QUOTE -->
+    <section class="slide is-obsidian">
+      <div class="folio-bar">
+        <span>PLATE 03 — MANIFESTO</span>
+        <span>NEGATIVE SPACE</span>
+      </div>
+      <div class="page-canvas" style="display:flex; flex-direction:column; justify-content:space-between; padding-top:128px; padding-bottom:68px;">
+        <div class="ed-index f-1" style="color:#d95b43;">ON RESTRAINT</div>
+        <blockquote class="ed-display f-2" style="font-size:48px; line-height:1.34; max-width:980px; font-weight:500;">
+          「真正的留白，不是設計還沒完成的空洞；<br/>它是讓視線得以停泊、讓文字產生重量的建築牆面。」
+        </blockquote>
+        <div class="f-3" style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--hair-light); padding-top:18px; font-family:var(--mono); font-size:12px; color:rgba(239,234,224,0.6);">
+          <span>JOSEF MÜLLER-BROCKMANN · GRID SYSTEMS IN GRAPHIC DESIGN</span>
+          <span>1981 / ZÜRICH</span>
+        </div>
+      </div>
+      <aside class="notes">第 03 頁：深黑霧面引言頁，靠字體比例與斷行控制氣場。</aside>
+    </section>
+
+    <!-- 04. NEWSPAPER / ESSAY 3-COLUMN SPREAD (Hairline dividers, Drop Cap) -->
+    <section class="slide">
+      <div class="folio-bar">
+        <span>PLATE 04 — EDITORIAL ESSAY</span>
+        <span>COLUMNAR TYPOGRAPHY</span>
+      </div>
+      <div class="page-canvas" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div class="f-1" style="padding-top:14px;">
+          <h2 class="ed-display" style="font-size:44px; max-width:900px;">為什麼把每一段字都裝進圓角方框，反而讓簡報看起來廉價？</h2>
+        </div>
+        <div class="f-2" style="display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:36px; border-top:1px solid var(--ink); padding-top:28px; flex:1; margin-top:26px;">
+          <div>
+            <p class="dropcap" style="font-size:16px; line-height:1.78; margin:0; color:var(--ink);">
+              當設計師不確定元素之間該如何建立空間關係時，最偷懶的做法就是替每一塊文字畫上邊框、加上圓角與陰影。這種作法雖然安全，卻把 16:9 的開闊畫布切割成零碎的網頁小元件，觀眾感受到的是系統儀表板，而不是精心編排的敘事作品。
+            </p>
+          </div>
+          <div style="border-left:1px solid var(--hair); padding-left:32px;">
+            <div style="font-family:var(--mono); font-size:11px; color:var(--vermilion); margin-bottom:10px;">01 / ALIGNMENT OVER BOXES</div>
+            <p style="font-size:15px; line-height:1.72; color:var(--stone); margin:0;">
+              只要字距、行距與左緣基準線足夠嚴謹，人眼自然會把相關的段落歸為一組，根本不需要灰色框線提醒。
+            </p>
+          </div>
+          <div style="border-left:1px solid var(--hair); padding-left:32px; display:flex; flex-direction:column; justify-content:space-between;">
+            <div>
+              <div style="font-family:var(--mono); font-size:11px; color:var(--vermilion); margin-bottom:10px;">02 / MEASURE 60–68CH</div>
+              <p style="font-size:15px; line-height:1.72; color:var(--stone); margin:0;">
+                控制單欄寬度不超過 68 字元，視線折返才不疲勞，這也是雜誌與精裝書數百年來不變的原則。
+              </p>
+            </div>
+            <div style="border-top:1px solid var(--hair); padding-top:14px; font-family:var(--serif); font-style:italic; font-size:20px; color:var(--ink);">
+              “Grid is an aid, not a guarantee.”
+            </div>
+          </div>
+        </div>
+      </div>
+      <aside class="notes">第 04 頁：報刊式三欄編輯排版，示範首字下沉與垂直細線分割。</aside>
+    </section>
+
+    <!-- 05. TUFTE-STYLE SLOPEGRAPH (Zero Chartjunk) -->
+    <section class="slide">
+      <div class="folio-bar">
+        <span>PLATE 05 — QUANTITATIVE EVIDENCE</span>
+        <span>SLOPEGRAPH COMPARISON</span>
+      </div>
+      <div class="page-canvas" style="display:grid; grid-template-columns:0.8fr 1.2fr; gap:56px; align-items:center;">
+        <div class="f-1">
+          <div class="ed-index" style="margin-bottom:14px;">DATA WITHOUT NOISE</div>
+          <h2 class="ed-display" style="font-size:42px; margin-bottom:20px;">拿掉背景框線與圖例盒，數據變化反而一目了然</h2>
+          <p class="ed-sub" style="font-size:15px;">
+            採用 Edward Tufte 提倡的斜率圖（Slopegraph）：直接把標籤寫在線條兩端，僅用朱紅色突顯關鍵成長項目，其餘維持炭灰低對比。
+          </p>
+        </div>
+        <div class="f-2" style="padding:12px 0;">
+          <svg viewBox="0 0 640 420" width="100%" height="100%" aria-hidden="true">
+            <!-- Left & right vertical baselines -->
+            <line x1="180" y1="44" x2="180" y2="380" stroke="#171614" stroke-width="1"/>
+            <line x1="460" y1="44" x2="460" y2="380" stroke="#171614" stroke-width="1"/>
+            <text x="180" y="26" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#6b655d">2024 BASELINE</text>
+            <text x="460" y="26" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#171614" font-weight="500">2026 REDESIGN</text>
+
+            <!-- Muted comparisons -->
+            <line x1="180" y1="150" x2="460" y2="175" stroke="#9c9488" stroke-width="1.5"/>
+            <circle cx="180" cy="150" r="4" fill="#9c9488"/><circle cx="460" cy="175" r="4" fill="#9c9488"/>
+            <text x="166" y="154" text-anchor="end" font-size="13" fill="#6b655d">固定模板 · 58</text>
+            <text x="474" y="179" text-anchor="start" font-size="13" fill="#6b655d">51（下降）</text>
+
+            <line x1="180" y1="245" x2="460" y2="230" stroke="#9c9488" stroke-width="1.5"/>
+            <circle cx="180" cy="245" r="4" fill="#9c9488"/><circle cx="460" cy="230" r="4" fill="#9c9488"/>
+            <text x="166" y="249" text-anchor="end" font-size="13" fill="#6b655d">一般簡報 · 34</text>
+            <text x="474" y="234" text-anchor="start" font-size="13" fill="#6b655d">38（持平）</text>
+
+            <line x1="180" y1="315" x2="460" y2="335" stroke="#9c9488" stroke-width="1.5"/>
+            <circle cx="180" cy="315" r="4" fill="#9c9488"/><circle cx="460" cy="335" r="4" fill="#9c9488"/>
+            <text x="166" y="319" text-anchor="end" font-size="13" fill="#6b655d">純文字頁 · 22</text>
+            <text x="474" y="339" text-anchor="start" font-size="13" fill="#6b655d">18（衰退）</text>
+
+            <!-- Hero focal line -->
+            <line x1="180" y1="280" x2="460" y2="78" stroke="#b8331b" stroke-width="3"/>
+            <circle cx="180" cy="280" r="5" fill="#b8331b"/><circle cx="460" cy="78" r="6" fill="#b8331b"/>
+            <text x="166" y="284" text-anchor="end" font-size="14" font-weight="700" fill="#b8331b">適配構圖 · 29</text>
+            <text x="474" y="83" text-anchor="start" font-size="15" font-weight="700" fill="#b8331b">86（+196%）</text>
+          </svg>
+        </div>
+      </div>
+      <aside class="notes">第 05 頁：Tufte 風格極簡斜率圖，沒有外框沒有雜訊。</aside>
+    </section>
+
+    <!-- 06. BAUHAUS / SWISS GEOMETRIC SPECIMEN (62% Visual + 38% Margin Note) -->
+    <section class="slide">
+      <div class="folio-bar">
+        <span>PLATE 06 — VISUAL SPECIMEN</span>
+        <span>62 / 38 ASYMMETRY</span>
+      </div>
+      <div class="page-canvas" style="display:grid; grid-template-columns:1.6fr 1fr; gap:48px; align-items:end;">
+        <div class="f-1" style="height:100%; display:flex; align-items:center; justify-content:center; background:var(--paper-deep);">
+          <svg viewBox="0 0 640 460" width="100%" height="100%" aria-hidden="true">
+            <rect x="60" y="45" width="520" height="370" fill="none" stroke="#171614" stroke-width="1"/>
+            <circle cx="255" cy="230" r="145" fill="#171614"/>
+            <path d="M255 85 A145 145 0 0 1 400 230 L255 230 Z" fill="#b8331b"/>
+            <rect x="335" y="150" width="180" height="180" fill="#f4f0e8" stroke="#171614" stroke-width="1.5"/>
+            <line x1="335" y1="150" x2="515" y2="330" stroke="#171614" stroke-width="1"/>
+            <circle cx="425" cy="240" r="32" fill="none" stroke="#b8331b" stroke-width="1.5"/>
+            <text x="76" y="395" font-family="IBM Plex Mono, monospace" font-size="11" fill="#171614">SPECIMEN 06 — GEOMETRIC TENSION</text>
+          </svg>
+        </div>
+        <div class="f-2" style="padding-bottom:12px;">
+          <div class="ed-index" style="margin-bottom:12px;">FIG. 06 / COMPOSITION</div>
+          <h2 class="ed-display" style="font-size:36px; margin-bottom:16px;">幾何張力取代裝飾性插畫</h2>
+          <p class="ed-sub" style="font-size:15px;">
+            當沒有合適的攝影照片時，與其生成廉價 Icon，不如用精確的圓、方與斜線構成具備美術館策展感的幾何標本，把焦點留給右下角精練的文字旁註。
+          </p>
+        </div>
+      </div>
+      <aside class="notes">第 06 頁：62/38 畫廊式展品與右下角旁註排版。</aside>
+    </section>
+
+    <!-- 07. EXHIBITION PROGRAM / OPEN SCHEDULE TABLE -->
+    <section class="slide">
+      <div class="folio-bar">
+        <span>PLATE 07 — PROGRAM SCHEDULE</span>
+        <span>OPEN HAIRLINE TABLE</span>
+      </div>
+      <div class="page-canvas" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div class="f-1" style="display:flex; justify-content:space-between; align-items:baseline; padding-top:12px;">
+          <h2 class="ed-display" style="font-size:44px;">設計評圖與編排工作坊議程</h2>
+          <span style="font-family:var(--mono); font-size:12px; color:var(--stone);">HALL A · NOVEMBER 2026</span>
+        </div>
+        <table class="f-2" style="width:100%; border-collapse:collapse; margin-top:20px; font-size:15px;">
+          <thead>
+            <tr style="border-top:2px solid var(--ink); border-bottom:1px solid var(--ink); text-align:left; font-family:var(--mono); font-size:11px; letter-spacing:0.12em; color:var(--stone);">
+              <th style="padding:14px 0; width:16%;">TIME</th>
+              <th style="padding:14px 0; width:36%;">SESSION</th>
+              <th style="padding:14px 0; width:28%;">FOCUS</th>
+              <th style="padding:14px 0; width:20%; text-align:right;">LEAD</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--hair);">
+              <td style="padding:20px 0; font-family:var(--mono); color:var(--vermilion);">09:30 – 10:30</td>
+              <td style="padding:20px 0; font-family:var(--serif); font-size:21px; font-weight:700;">淘汰 AI 味：建立負面約束清單</td>
+              <td style="padding:20px 0; color:var(--stone);">移除預設字體與圓角卡片盒</td>
+              <td style="padding:20px 0; text-align:right; font-family:var(--mono); font-size:12px;">AGENTS.MD</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--hair);">
+              <td style="padding:20px 0; font-family:var(--mono);">10:45 – 12:00</td>
+              <td style="padding:20px 0; font-family:var(--serif); font-size:21px; font-weight:700;">字階、行寬與紙本微紋理</td>
+              <td style="padding:20px 0; color:var(--stone);">襯線標題搭配 60–68ch 欄寬</td>
+              <td style="padding:20px 0; text-align:right; font-family:var(--mono); font-size:12px;">TYPOGRAPHY</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--hair);">
+              <td style="padding:20px 0; font-family:var(--mono);">14:00 – 15:30</td>
+              <td style="padding:20px 0; font-family:var(--serif); font-size:21px; font-weight:700;">Tufte 數據圖解與非對稱格線</td>
+              <td style="padding:20px 0; color:var(--stone);">直覺標註取代多餘圖例框</td>
+              <td style="padding:20px 0; text-align:right; font-family:var(--mono); font-size:12px;">DATA INK</td>
+            </tr>
+            <tr style="border-bottom:2px solid var(--ink);">
+              <td style="padding:20px 0; font-family:var(--mono);">15:45 – 17:00</td>
+              <td style="padding:20px 0; font-family:var(--serif); font-size:21px; font-weight:700;">單頁逐格審美與雙格式交付</td>
+              <td style="padding:20px 0; color:var(--stone);">現場改字並匯出 PDF / PPTX</td>
+              <td style="padding:20px 0; text-align:right; font-family:var(--mono); font-size:12px;">EXPORT QA</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="notes">第 07 頁：開放式細線表格，無底色塊、無膠囊標籤，純靠字重與線條分層。</aside>
+    </section>
+
+    <!-- 08. QUIET BOOK COLOPHON / CLOSING -->
+    <section class="slide is-obsidian">
+      <div style="position:absolute; inset:32px; border:1px solid var(--hair-light); pointer-events:none;"></div>
+      <div class="page-canvas" style="display:flex; flex-direction:column; justify-content:space-between; padding:88px 96px;">
+        <div class="f-1" style="display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:rgba(239,234,224,0.55);">
+          <span>COLOPHON // PLATE 08</span>
+          <span>END OF SPECIMEN</span>
+        </div>
+        <div class="f-2" style="max-width:760px;">
+          <h2 class="ed-display" style="font-size:52px; line-height:1.2;">你比較一下這 8 頁<br/>跟剛剛那版，差別在哪裡。</h2>
+          <p class="ed-sub" style="margin-top:24px;">
+            如果這個「拿掉圓角卡片、改用襯線字階、細線與大量留白」的方向才對味，我們就把這套標準鎖進系統引擎。
+          </p>
+        </div>
+        <div class="f-3" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="width:28px; height:28px; border:1px solid #b8331b; display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:13px; color:#b8331b;">印</div>
+          <span style="font-family:var(--mono); font-size:11px; color:rgba(239,234,224,0.5);">SET IN CORMORANT GARAMOND &amp; NOTO SERIF TC</span>
+        </div>
+      </div>
+      <aside class="notes">第 08 頁：精裝書版權頁收尾，極簡印記與細線框。</aside>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+  <script src="../engine/deck.js"></script>
+</body>
+</html>

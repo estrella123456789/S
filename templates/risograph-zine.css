@@ -1,0 +1,73 @@
+/* ==========================================================================
+   Template 03: Risograph Zine (孔版印刷獨立刊物風)
+   特徵：象牙紙、半色調網點 Halftone、雙色錯位疊印、印刷裁切線、中文直排側標
+   ========================================================================== */
+
+.slide {
+  --bg: #faf5eb;
+  --fg: #163329;
+  --coral: #ff4f40;
+  --muted: #556b62;
+  background-color: var(--bg);
+  background-image: radial-gradient(rgba(22, 51, 41, 0.11) 1.1px, transparent 1.1px);
+  background-size: 16px 16px;
+  color: var(--fg);
+  font-family: "Noto Serif TC", "Songti TC", Georgia, serif;
+  padding: 60px 76px;
+}
+
+/* 印刷四角裁切線 */
+.riso-crop::before,
+.riso-crop::after {
+  content: "";
+  position: absolute;
+  inset: 22px;
+  border: 1px solid rgba(22, 51, 41, 0.25);
+  pointer-events: none;
+}
+
+.riso-vertical {
+  position: absolute;
+  right: 40px;
+  top: 56px;
+  writing-mode: vertical-rl;
+  font-size: 14px;
+  letter-spacing: 0.35em;
+  color: var(--coral);
+  font-weight: 700;
+}
+
+.riso-misregister {
+  position: relative;
+  display: inline-block;
+  font-size: 76px;
+  font-weight: 900;
+  line-height: 1.08;
+  color: var(--fg);
+}
+
+.riso-misregister::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  color: var(--coral);
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.riso-spread {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 56px;
+  height: 100%;
+  align-items: center;
+}
+
+.riso-halftone-card {
+  background: #fffdf8;
+  border: 1.5px solid var(--fg);
+  padding: 32px;
+  box-shadow: 8px 8px 0 var(--coral);
+}

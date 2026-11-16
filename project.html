@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Slide Atelier｜專案與擴充規則</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f3efe7;color:#1d2626;font:17px/1.8 system-ui,'Microsoft JhengHei',sans-serif}main{max-width:960px;margin:auto;padding:48px 24px 64px}nav{display:flex;gap:24px;flex-wrap:wrap}a{color:#0d4f4f;text-underline-offset:5px}h1{font-size:clamp(36px,6vw,60px);line-height:1.2;margin:56px 0 24px}h2{font-size:24px;margin:0 0 16px}p{max-width:720px}section{border-top:1px solid #c8c2b7;margin-top:40px;padding-top:32px}li{margin:12px 0}footer{margin-top:40px;color:#5d6a6a;font-size:14px}
+</style></head>
+<body><main>
+<nav aria-label="專案導覽"><a href="index.html">開啟簡報工作室 →</a><a href="AGENTS.md">閱讀 AGENTS.md</a><a href="examples/rules-demo.json" download>下載範例 JSON</a></nav>
+<h1>一套規則，<br>延伸下一份簡報。</h1>
+<p>Slide Atelier 將設計規範寫成 AI 能沿用的文件，將內容整理成可重複匯入的資料。</p>
+<section><h2>這個專案做什麼</h2><p>純前端簡報工作室，提供風格切換、版面選擇、資料匯入與預覽。專案將內容、渲染、舞台和匯出分開，新增主題時可以沿用既有引擎。</p></section>
+<section><h2>規則如何對應到網站</h2><ul><li>整份簡報選用同一套鎖定風格，同類內容沿用相同版面。</li><li>每頁只保留一個視覺焦點，內容太多就拆頁。</li><li>沒有來源的數字與圖片留空，不用假資料填滿版面。</li><li>所有簡報使用 1280 × 720 等比舞台。</li></ul><p>完整資料契約與驗收流程收錄於 <a href="AGENTS.md">AGENTS.md</a>，視覺規格另見 <a href="DESIGN_CATALOG.md">Design Catalog</a>。</p></section>
+<section><h2>實際新增一份內容</h2><ol><li>下載 <a href="examples/rules-demo.json" download>範例資料</a>，或請 AI 先讀取 AGENTS.md，依範例建立新的 JSON。</li><li>開啟工作室的資料匯入功能，上傳 JSON 或貼上內容，按「解析並套用」。</li><li>選擇整份簡報的風格，逐頁確認內容完整、留白和對齊。</li></ol><p>範例的兩張內頁刻意沿用同一版面，展示一致的閱讀節奏。匯入資料儲存在目前瀏覽器；若要分享內容，請保留 JSON 檔供其他人匯入。</p></section>
+<section><h2>交給 AI 的下一個任務</h2><p>「請先閱讀 AGENTS.md 與 examples/rules-demo.json，根據我提供的資料建立 examples/新主題.json。不要編造數據或圖片；每頁最多四個要點，同類內容沿用相同版面。完成後在工作室匯入預覽。」</p></section>
+<footer>Slide Atelier · 規則、內容與呈現分工，讓專案持續延伸。</footer>
+</main></body></html>

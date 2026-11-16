@@ -1,0 +1,56 @@
+/* ==========================================================================
+   Template 04: Tech-Art Darkroom (科技藝術暗房／酸性設計風)
+   特徵：深炭黑、局部微光暈、點陣座標網、螢光萊姆點綴、襯線搭等寬反差
+   ========================================================================== */
+
+.slide {
+  --bg: #0a0b0e;
+  --fg: #eceef2;
+  --muted: #8c93a3;
+  --acid: #c8ff3d;
+  --line: #272b36;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 82% 20%, rgba(200, 255, 61, 0.12), transparent 42%),
+    radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  color: var(--fg);
+  font-family: "Noto Sans TC", "PingFang TC", system-ui, sans-serif;
+  padding: 58px 68px;
+}
+
+.dark-serif {
+  font-family: "Noto Serif TC", Georgia, serif;
+  font-size: 68px;
+  font-weight: 500;
+  line-height: 1.12;
+  margin: 0;
+}
+
+.dark-coord {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--acid);
+}
+
+.dark-glass-panel {
+  background: rgba(18, 20, 27, 0.78);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+  padding: 32px;
+}
+
+.dark-canvas-box {
+  width: 100%;
+  height: 430px;
+  border: 1px solid var(--line);
+  background: #0d0f14;
+  position: relative;
+}
+
+.dark-canvas-box canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

@@ -1,0 +1,68 @@
+/* ==========================================================================
+   Template 02: Bauhaus Geometry (包浩斯幾何構成風)
+   特徵：暖奶油紙底、紅藍黃三原色幾何色塊、對角斜切構圖、粗體幾何無襯線
+   ========================================================================== */
+
+.slide {
+  --bg: #f6efe2;
+  --fg: #161616;
+  --red: #d62828;
+  --blue: #1d4ed8;
+  --yellow: #f4b400;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: "Futura", "Noto Sans TC", "PingFang TC", sans-serif;
+  padding: 58px 68px;
+}
+
+.bau-circle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.bau-diagonal {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(122deg, transparent 58%, #161616 58.1%, #161616 58.5%, var(--yellow) 58.6%);
+  pointer-events: none;
+}
+
+.bau-title {
+  font-size: 72px;
+  font-weight: 800;
+  line-height: 1.06;
+  margin: 0 0 24px;
+}
+
+.bau-tag {
+  display: inline-block;
+  background: var(--fg);
+  color: var(--bg);
+  padding: 6px 14px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+}
+
+.bau-split {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 48px;
+  height: 100%;
+  align-items: center;
+}
+
+.bau-block-red {
+  background: var(--red);
+  color: #fff;
+  padding: 36px;
+}
+
+.bau-block-blue {
+  background: var(--blue);
+  color: #fff;
+  padding: 36px;
+}

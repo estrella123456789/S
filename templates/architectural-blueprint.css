@@ -1,0 +1,61 @@
+/* ==========================================================================
+   Template 05: Architectural Blueprint (建築藍圖／工程圖紙風)
+   特徵：普魯士藍、雙層製圖方格線、細白圖框、十字準星、製圖青技術標註
+   ========================================================================== */
+
+.slide {
+  --bg: #0b2545;
+  --fg: #f0f6ff;
+  --cyan: #64dfdf;
+  --line: rgba(240, 246, 255, 0.28);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(to right, rgba(240, 246, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240, 246, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(to right, rgba(240, 246, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(240, 246, 255, 0.03) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  color: var(--fg);
+  font-family: "Noto Sans TC", ui-monospace, Consolas, sans-serif;
+  padding: 52px 64px;
+}
+
+.bp-frame {
+  width: 100%;
+  height: 100%;
+  border: 1.5px solid var(--line);
+  padding: 36px 42px;
+  position: relative;
+}
+
+.bp-frame::before {
+  content: "DWG NO. 05 // SCALE 1:1 // 1280x720";
+  position: absolute;
+  right: 18px;
+  bottom: -24px;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: var(--cyan);
+}
+
+.bp-title {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 1.12;
+  margin: 0 0 18px;
+}
+
+.bp-label {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--cyan);
+  text-transform: uppercase;
+}
+
+.bp-box {
+  border: 1px dashed var(--line);
+  padding: 24px;
+  background: rgba(19, 49, 92, 0.55);
+}

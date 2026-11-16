@@ -1,0 +1,325 @@
+/* ==========================================================================
+   Slide Atelier Engine — stage.css
+   1280×720 等比縮放舞台、分段進場、現場編輯樣式、HUD、總覽、16:9 PDF 列印匯出
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #0a0a0c;
+  color: #111111;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.stage-viewport {
+  position: fixed;
+  inset: 0 0 46px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.deck {
+  position: relative;
+  width: 1280px;
+  height: 720px;
+  flex-shrink: 0;
+  transform-origin: center center;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  width: 1280px;
+  height: 720px;
+  display: none;
+  overflow: hidden;
+}
+
+.slide.is-active {
+  display: block;
+  animation: slideFade 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes slideFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ---------- 豐富轉場與進場動畫（支援預覽重播與實際播放） ---------- */
+@keyframes animFadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes animCurtain {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+@keyframes animZoomIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes animBlurFocus {
+  from { opacity: 0; filter: blur(10px); transform: scale(1.03); }
+  to { opacity: 1; filter: blur(0); transform: scale(1); }
+}
+@keyframes animSlideDiag {
+  from { opacity: 0; clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); }
+  to { opacity: 1; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); }
+}
+@keyframes animTrackOpen {
+  from { opacity: 0; letter-spacing: -0.06em; }
+  to { opacity: 1; letter-spacing: 0.01em; }
+}
+
+.anim-fade-up { animation: animFadeUp 520ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-curtain { animation: animCurtain 580ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-zoom { animation: animZoomIn 480ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-blur { animation: animBlurFocus 560ms ease-out both; }
+.anim-diag { animation: animSlideDiag 600ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.anim-track { animation: animTrackOpen 620ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ---------- 分段進場元素 (data-step) ---------- */
+[data-step] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 320ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-step].is-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---------- 現場編輯模式 (按 E 鍵) ---------- */
+body.is-editing [contenteditable="true"] {
+  outline: 1.5px dashed rgba(230, 72, 21, 0.65);
+  outline-offset: 4px;
+  cursor: text;
+}
+
+body.is-editing [contenteditable="true"]:focus {
+  outline: 2px solid #e64815;
+  background: rgba(230, 72, 21, 0.06);
+}
+
+body.is-editing .slide [data-step] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* ---------- 講者備忘 ---------- */
+.notes {
+  display: none;
+}
+
+.notes-drawer {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 60px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  background: rgba(15, 16, 20, 0.96);
+  color: #f3f3ef;
+  border: 1px solid #e64815;
+  font-family: "Noto Sans TC", system-ui, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  z-index: 60;
+  display: none;
+}
+
+.notes-drawer.is-open {
+  display: block;
+}
+
+.notes-drawer-label {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: #e64815;
+  margin-bottom: 6px;
+}
+
+/* ---------- 底部 HUD 控制列 ---------- */
+.hud-progress {
+  position: fixed;
+  left: 0;
+  bottom: 46px;
+  height: 2px;
+  background: #e64815;
+  transition: width 220ms ease;
+  z-index: 51;
+}
+
+.hud {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 46px;
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111216;
+  color: #d8d8d2;
+  border-top: 1px solid #262830;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.75rem;
+  z-index: 50;
+}
+
+.hud-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud a,
+.hud button {
+  appearance: none;
+  background: transparent;
+  color: #ecece6;
+  border: 1px solid #353844;
+  padding: 4px 9px;
+  font-family: inherit;
+  font-size: 0.73rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.hud a:hover,
+.hud button:hover,
+.hud button.is-on {
+  background: #e64815;
+  border-color: #e64815;
+  color: #ffffff;
+}
+
+.hud-title {
+  color: #8b8f9c;
+  max-width: 24vw;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- 總覽模式 (按 O 鍵) ---------- */
+body.is-overview {
+  overflow: auto;
+}
+
+body.is-overview .stage-viewport {
+  position: static;
+  display: block;
+  padding: 28px 28px 76px;
+  overflow: visible;
+}
+
+body.is-overview .deck {
+  width: 100%;
+  height: auto;
+  transform: none !important;
+  box-shadow: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  overflow: visible;
+}
+
+body.is-overview .slide {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: 180px;
+  display: block;
+  border: 1px solid #353844;
+  cursor: pointer;
+  transform: none !important;
+  animation: none !important;
+}
+
+body.is-overview .slide [data-step] {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+body.is-overview .slide:hover {
+  outline: 2px solid #e64815;
+}
+
+/* ---------- 16:9 PDF 匯出列印模式 ---------- */
+@page {
+  size: 1280px 720px;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    width: 1280px;
+    height: auto;
+    background: #ffffff;
+    overflow: visible;
+  }
+
+  .hud,
+  .hud-progress,
+  .notes-drawer {
+    display: none !important;
+  }
+
+  .stage-viewport {
+    position: static;
+    display: block;
+    overflow: visible;
+  }
+
+  .deck {
+    width: 1280px;
+    height: auto;
+    transform: none !important;
+    box-shadow: none;
+    overflow: visible;
+  }
+
+  .slide {
+    position: relative !important;
+    inset: auto !important;
+    display: block !important;
+    width: 1280px !important;
+    height: 720px !important;
+    page-break-after: always;
+    break-after: page;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .slide [data-step] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

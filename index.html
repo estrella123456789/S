@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slide Atelier — 互動式簡報設計工作室</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --surface: #ffffff;
+      --tint: #ebe4d5;
+      --fg: #1d2626;
+      --muted: #5d6a6a;
+      --border: #d7cebc;
+      --primary: #0d4f4f;
+      --secondary: #9e5a38;
+      --sans: "Noto Sans TC", "Microsoft JhengHei", system-ui, sans-serif;
+      --serif: "Noto Serif TC", Georgia, serif;
+      --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .topbar {
+      height: 50px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-title { font-family: var(--serif); font-weight: 900; font-size: 1.12rem; color: var(--primary); }
+    .brand-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--primary);
+      background: #e3eded;
+      padding: 2px 10px;
+      border-radius: 999px;
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--fg);
+      padding: 5px 11px;
+      border-radius: 7px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 120ms ease;
+    }
+
+    .btn:hover { border-color: var(--primary); color: var(--primary); }
+    .btn:disabled { opacity: 0.55; cursor: wait; }
+    .btn-primary { background: var(--primary); border-color: var(--primary); color: #ffffff; }
+    .btn-primary:hover { background: #093b3b; border-color: #093b3b; color: #ffffff; }
+    .btn-accent { background: var(--secondary); border-color: var(--secondary); color: #ffffff; }
+    .btn-accent:hover { background: #7f4428; border-color: #7f4428; color: #ffffff; }
+
+    .workspace {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 382px 1fr;
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 12px 14px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 5px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .ctrl-block { display: flex; flex-direction: column; gap: 6px; }
+    .ctrl-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .ctrl-count { font-family: var(--mono); font-size: 10.5px; color: var(--muted); font-weight: 600; }
+
+    .topic-stack { display: flex; flex-direction: column; gap: 5px; }
+    .topic-btn {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      color: var(--fg);
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topic-btn:hover { border-color: var(--primary); }
+    .topic-btn.is-active {
+      background: #e5f0f0;
+      border-color: var(--primary);
+      color: var(--primary);
+      box-shadow: inset 0 0 0 1px var(--primary);
+    }
+
+    .preset-stack { display: flex; flex-direction: column; gap: 6px; }
+    .preset-btn {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      color: var(--fg);
+      font-family: var(--sans);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .preset-btn:hover { border-color: var(--primary); }
+    .preset-btn.is-active {
+      background: var(--surface);
+      border-color: var(--primary);
+      box-shadow: inset 0 0 0 1.5px var(--primary);
+    }
+    .preset-info { min-width: 0; }
+    .preset-name { display: block; font-size: 12px; font-weight: 800; line-height: 1.3; color: var(--fg); }
+    .preset-desc { display: block; font-size: 10.5px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .color-swatches { display: inline-flex; gap: 3px; flex-shrink: 0; }
+    .color-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.18); }
+
+    .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .layout-btn {
+      appearance: none;
+      text-align: left;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 8px;
+      cursor: pointer;
+      color: var(--fg);
+      font-family: var(--sans);
+    }
+    .layout-btn:hover { border-color: var(--secondary); }
+    .layout-btn.is-active { background: var(--secondary); border-color: var(--secondary); color: #ffffff; }
+    .layout-title {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .layout-meta {
+      display: block;
+      margin-top: 2px;
+      font-size: 9.5px;
+      opacity: 0.78;
+    }
+
+    .stage-area {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+      padding: 8px 18px 12px;
+      gap: 7px;
+    }
+
+    .stage-bar {
+      height: 34px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .nav-group { display: flex; align-items: center; gap: 6px; }
+
+    .page-select {
+      appearance: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 24px 5px 10px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--fg);
+      max-width: 320px;
+      cursor: pointer;
+      outline: none;
+      background-image: linear-gradient(45deg, transparent 50%, var(--primary) 50%), linear-gradient(135deg, var(--primary) 50%, transparent 50%);
+      background-position: calc(100% - 14px) 11px, calc(100% - 9px) 11px;
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+    .page-select:focus { border-color: var(--primary); }
+
+    .mode-badge {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #f5e8df;
+      color: var(--secondary);
+    }
+
+    /* 完整簡報編輯器工具列 */
+    .editor-ribbon {
+      flex-shrink: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 5px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .editor-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+    }
+    .ed-sep { width: 1px; height: 18px; background: var(--border); margin: 0 2px; }
+    .ed-btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--fg);
+      border-radius: 5px;
+      padding: 3px 7px;
+      font-family: var(--sans);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .ed-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .ed-btn.is-on { background: var(--primary); border-color: var(--primary); color: #ffffff; }
+    .ed-btn:disabled { opacity: 0.38; cursor: not-allowed; }
+    .ed-btn-insert { background: #eaf4f4; border-color: #9dc5c5; color: var(--primary); }
+    .ed-btn-danger { background: #fdf2f2; border-color: #e5b4b4; color: #b91c1c; }
+
+    .ed-select {
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--fg);
+      border-radius: 5px;
+      padding: 2px 5px;
+      font-size: 11px;
+      font-weight: 600;
+      height: 23px;
+    }
+    .ed-select:disabled { opacity: 0.4; }
+    .ed-label {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .ed-color {
+      width: 22px;
+      height: 20px;
+      padding: 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      background: transparent;
+    }
+    .ed-color:disabled { opacity: 0.4; }
+    .ed-status {
+      font-size: 11px;
+      color: var(--muted);
+      margin-left: auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 300px;
+    }
+
+    .stage-viewport {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .stage-frame {
+      width: 1280px;
+      height: 720px;
+      flex-shrink: 0;
+      transform-origin: center center;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 16px 44px rgba(0, 0, 0, 0.14);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: transparent;
+      user-select: none;
+    }
+
+    .stage-frame [data-edit-selected="true"] {
+      outline: 2px dashed #2563eb !important;
+      outline-offset: -2px;
+      cursor: move !important;
+    }
+    .stage-frame [contenteditable="true"]:focus {
+      outline: 2px solid #2563eb !important;
+      outline-offset: -2px;
+      cursor: text !important;
+      user-select: text !important;
+    }
+    .stage-frame [data-el] {
+      pointer-events: auto !important;
+    }
+
+    @media (max-width: 960px) {
+      html, body { height: auto; overflow: auto; }
+      .workspace { grid-template-columns: 1fr; }
+      .stage-viewport { min-height: 320px; }
+    }
+
+    .import-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(15, 23, 42, 0.56);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .import-modal-backdrop.is-open { display: flex; }
+    .import-modal {
+      width: min(720px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px 24px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .import-dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      background: #f8fafc;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+    .import-dropzone:hover, .import-dropzone.is-dragover {
+      border-color: #0f5257;
+      background: #f0fdf9;
+    }
+    .import-textarea {
+      width: 100%;
+      min-height: 190px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-family: var(--sans);
+      font-size: 13px;
+      line-height: 1.55;
+      resize: vertical;
+      color: var(--fg);
+    }
+    .import-input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-family: var(--sans);
+      font-size: 13px;
+      color: var(--fg);
+    }
+    .topic-row {
+      display: flex;
+      align-items: stretch;
+      gap: 4px;
+    }
+    .topic-row .topic-btn {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .topic-badge {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #e2e8f0;
+      color: #334155;
+    }
+    .topic-badge.is-custom {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    .topic-del-btn {
+      appearance: none;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: #991b1b;
+      border-radius: 7px;
+      padding: 0 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .topic-del-btn:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+    }
+    .import-solid-btn {
+      width: 100%;
+      justify-content: center;
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #ffffff;
+      font-weight: 800;
+      padding: 8px 12px;
+      margin-bottom: 6px;
+    }
+    .import-solid-btn:hover {
+      background: #0a3c40;
+      border-color: #0a3c40;
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-title">Slide Atelier</span>
+    </div>
+    <nav class="top-actions">
+      <a class="btn" href="project.html">專案介紹與擴充規則</a>
+      <a class="btn" href="decks/01-design-atlas-20.html">Lumina 商業企劃版</a>
+      <button type="button" class="btn btn-accent" id="downloadPptBtn">⬇ 下載可編輯 PPT (.pptx)</button>
+      <a class="btn btn-primary" id="openDeckBtn" href="decks/studio-deck.html">全螢幕播放與 PDF →</a>
+    </nav>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar">
+      <section class="ctrl-block">
+        <div class="ctrl-head">
+          <span>1. 資料來源與範例</span>
+          <button type="button" class="btn" id="restoreExamplesBtn" style="padding:2px 7px;font-size:10px;display:none;">↺ 恢復範例</button>
+        </div>
+        <button type="button" class="btn import-solid-btn" id="openImportModalBtn">＋ 匯入資料 / 檔案生成簡報</button>
+        <div class="topic-stack" id="topicBar"></div>
+      </section>
+
+      <section class="ctrl-block">
+        <div class="ctrl-head">
+          <span>2. 選擇視覺風格（4 套完整搭配）</span>
+          <span class="ctrl-count">精選套裝</span>
+        </div>
+        <div class="preset-stack" id="stylePresetBar"></div>
+      </section>
+
+      <section class="ctrl-block" style="flex:1;">
+        <div class="ctrl-head">
+          <span>3. 切換本頁版面</span>
+          <button type="button" class="btn" id="resetPageBtn" style="padding:2px 8px;font-size:10.5px;visibility:hidden;">還原版面</button>
+        </div>
+        <div class="layout-grid" id="layoutSwitcher"></div>
+      </section>
+    </aside>
+
+    <section class="stage-area">
+      <div class="stage-bar">
+        <div class="nav-group">
+          <button type="button" class="btn" id="prevBtn">← 上一頁</button>
+          <select class="page-select" id="pageSelect" aria-label="選擇投影片頁碼"></select>
+          <button type="button" class="btn" id="nextBtn">下一頁 →</button>
+        </div>
+        <div class="nav-group">
+          <span class="mode-badge" id="stageModeLabel">banner-3-rows</span>
+          <span style="font-size:11.5px;color:var(--muted);">可用 ← / → 翻頁</span>
+        </div>
+      </div>
+
+      <!-- 完整簡報編輯器工具列 -->
+      <div class="editor-ribbon">
+        <div class="editor-row">
+          <button type="button" class="ed-btn" id="edUndo" disabled title="復原上一步 (Ctrl+Z)">↶ 復原</button>
+          <button type="button" class="ed-btn" id="edRedo" disabled title="重做 (Ctrl+Y)">↷ 重做</button>
+          <span class="ed-sep"></span>
+          <select class="ed-select" id="elFontFamily" disabled title="元素字型">
+            <option value="">字型預設</option>
+            <option value="'Noto Sans TC', 'Microsoft JhengHei', sans-serif">思源黑體</option>
+            <option value="'Noto Serif TC', 'PMingLiU', Georgia, serif">思源宋體 (明體)</option>
+            <option value="'Cormorant Garamond', 'Noto Serif TC', Georgia, serif">歐美襯線</option>
+            <option value="'JetBrains Mono', Consolas, monospace">工程等寬體</option>
+          </select>
+          <select class="ed-select" id="elFontSize" disabled title="文字大小">
+            <option value="">字號</option>
+            <option value="14px">14</option>
+            <option value="16px">16</option>
+            <option value="18px">18</option>
+            <option value="20px">20</option>
+            <option value="24px">24</option>
+            <option value="28px">28</option>
+            <option value="32px">32</option>
+            <option value="36px">36</option>
+            <option value="42px">42</option>
+            <option value="48px">48</option>
+            <option value="60px">60</option>
+            <option value="72px">72</option>
+          </select>
+          <button type="button" class="ed-btn" id="elFontDn" disabled title="縮小文字">A-</button>
+          <button type="button" class="ed-btn" id="elFontUp" disabled title="放大文字">A+</button>
+          <button type="button" class="ed-btn" id="elBold" disabled title="粗體"><b>B</b></button>
+          <button type="button" class="ed-btn" id="elItalic" disabled title="斜體"><i>I</i></button>
+          <button type="button" class="ed-btn" id="elUnderline" disabled title="底線"><u>U</u></button>
+          <span class="ed-sep"></span>
+          <button type="button" class="ed-btn" id="elAlignLeft" disabled title="靠左對齊">靠左</button>
+          <button type="button" class="ed-btn" id="elAlignCenter" disabled title="置中對齊">置中</button>
+          <button type="button" class="ed-btn" id="elAlignRight" disabled title="靠右對齊">靠右</button>
+          <label class="ed-label">字色<input type="color" class="ed-color" id="elTextColor" value="#141413" disabled /></label>
+          <span class="ed-status" id="editorStatus">點舞台文字直接打字 · 點物件可拖拉改樣式</span>
+        </div>
+
+        <div class="editor-row">
+          <button type="button" class="ed-btn ed-btn-insert" id="elAddText">＋文字</button>
+          <button type="button" class="ed-btn ed-btn-insert" id="elAddCard">＋色塊卡片</button>
+          <button type="button" class="ed-btn ed-btn-insert" id="elAddCircle">＋圓形標籤</button>
+          <button type="button" class="ed-btn ed-btn-insert" id="elAddLine">＋分隔線</button>
+          <button type="button" class="ed-btn ed-btn-insert" id="elAddImage">🖼 插入圖片</button>
+          <input type="file" id="elImageInput" accept="image/*" style="display:none;" />
+          <span class="ed-sep"></span>
+          <label class="ed-label">填色<input type="color" class="ed-color" id="elBgColor" value="#ffffff" disabled /></label>
+          <button type="button" class="ed-btn" id="elBgTransparent" disabled title="設為透明背景">透明</button>
+          <label class="ed-label">邊框<input type="color" class="ed-color" id="elBorderColor" value="#1d2626" disabled /></label>
+          <select class="ed-select" id="elBorderWidth" disabled title="邊框粗細">
+            <option value="0px">無框</option>
+            <option value="1px">細框 1px</option>
+            <option value="2px">中框 2px</option>
+            <option value="4px">粗框 4px</option>
+          </select>
+          <select class="ed-select" id="elRadius" disabled title="圓角大小">
+            <option value="0px">直角</option>
+            <option value="8px">微圓</option>
+            <option value="16px">圓角</option>
+            <option value="999px">膠囊</option>
+          </select>
+          <span class="ed-sep"></span>
+          <button type="button" class="ed-btn" id="elBringForward" disabled title="上移一層">上移</button>
+          <button type="button" class="ed-btn" id="elSendBackward" disabled title="下移一層">下移</button>
+          <button type="button" class="ed-btn" id="elScaleUp" disabled>放大</button>
+          <button type="button" class="ed-btn" id="elScaleDn" disabled>縮小</button>
+          <button type="button" class="ed-btn" id="elDuplicate" disabled>⧉ 複製</button>
+          <button type="button" class="ed-btn ed-btn-danger" id="elDelete" disabled>🗑 刪除</button>
+          <button type="button" class="ed-btn" id="elResetCustom" style="visibility:hidden;margin-left:auto;">↺ 還原預設</button>
+        </div>
+      </div>
+
+      <div class="stage-viewport" id="stageViewport">
+        <div class="stage-frame" id="stageFrame"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="import-modal-backdrop" id="importModal" aria-hidden="true">
+    <div class="import-modal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <div>
+          <h2 id="importModalTitle" style="margin:0;font-size:17px;font-weight:800;">匯入資料 / 檔案生成簡報</h2>
+          <p style="margin:3px 0 0;font-size:12px;color:var(--muted);">支援直接貼上文字、Markdown、標準 JSON，或上傳 Word (.docx)、PowerPoint (.pptx)、PDF (.pdf)、TXT / MD 檔案。</p>
+        </div>
+        <button type="button" class="btn" id="closeImportModalBtn">✕ 關閉</button>
+      </div>
+
+      <div>
+        <label for="importTitleInput" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;">簡報標題（選填，留空將自動擷取）</label>
+        <input type="text" class="import-input" id="importTitleInput" placeholder="例如：2026 智慧醫療專案期末報告" />
+      </div>
+
+      <div class="import-dropzone" id="importDropzone">
+        <input type="file" id="importFileInput" accept=".txt,.md,.csv,.json,.docx,.pptx,.pdf" style="display:none;" />
+        <div style="font-size:13px;font-weight:700;color:#0f5257;">點擊選擇檔案，或將檔案拖放到此處</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">支援格式：.docx (Word) / .pptx (簡報) / .pdf / .md / .txt / .json</div>
+      </div>
+
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <label for="importTextInput" style="font-size:12px;font-weight:700;">原始內容 / 大綱 / Canonical JSON</label>
+          <div style="display:flex;gap:6px;">
+            <button type="button" class="ed-btn" id="fillSampleMdBtn" title="填入示範大綱快速測試">📝 載入範例大綱</button>
+            <button type="button" class="ed-btn" id="copyAiPromptBtn" title="複製 AI 結構化整理提示詞">📋 複製 AI 整理提示詞</button>
+          </div>
+        </div>
+        <textarea class="import-textarea" id="importTextInput" placeholder="在此貼上文章、筆記、會議紀錄、Markdown 大綱（使用 # / ## 分頁），或貼上 AI 產生的 Canonical Slide Content JSON..."></textarea>
+      </div>
+
+      <div id="importStatusMsg" style="font-size:12px;color:#0f5257;min-height:18px;"></div>
+
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <button type="button" class="btn" id="clearImportBtn" style="color:#991b1b;border-color:#fca5a5;">🗑 清空 / 移除檔案</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button type="button" class="btn" id="cancelImportBtn">取消</button>
+          <button type="button" class="btn btn-primary" id="runImportBtn">✨ 解析並套用到 6 模板 × 30 版面</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="engine/template-svgs.js"></script>
+  <script src="engine/renderer.js"></script>
+  <script src="engine/pptx-exporter.js"></script>
+  <script src="engine/importer.js"></script>
+  <script>
+    (() => {
+      const SR = window.SlideRenderer;
+      if (window.SlideImporter) window.SlideImporter.registerAllIntoRenderer(SR);
+      const STORAGE_KEY = "slide_atelier_v6_state";
+
+      const state = {
+        topic: "cafe-brand",
+        template: "editorial-magazine",
+        color: "cafe-terracotta",
+        font: "serif-classic",
+        page: 0,
+        pageOverrides: {},
+        customHtmlByPage: {}
+      };
+
+      try {
+        const hm = location.hash.match(/state=([^&]+)/);
+        const raw = hm ? decodeURIComponent(hm[1]) : localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p.topic && SR.TOPICS.some((t) => t.id === p.topic)) state.topic = p.topic;
+          if (p.template && SR.MASTER_TEMPLATES.some((t) => t.id === p.template)) state.template = p.template;
+          if (p.color && SR.COLOR_PALETTES.some((c) => c.id === p.color)) state.color = p.color;
+          if (p.font && SR.FONT_PAIRINGS.some((f) => f.id === p.font)) state.font = p.font;
+          if (typeof p.page === "number") state.page = Math.max(0, Math.min(19, p.page));
+          if (p.pageOverrides && typeof p.pageOverrides === "object") state.pageOverrides = p.pageOverrides;
+          if (p.customHtmlByPage && typeof p.customHtmlByPage === "object") state.customHtmlByPage = p.customHtmlByPage;
+        }
+      } catch {}
+
+      const topicBar = document.getElementById("topicBar");
+      const stylePresetBar = document.getElementById("stylePresetBar");
+      const layoutSwitcher = document.getElementById("layoutSwitcher");
+      const resetPageBtn = document.getElementById("resetPageBtn");
+      const pageSelect = document.getElementById("pageSelect");
+      const stageModeLabel = document.getElementById("stageModeLabel");
+      const stageViewport = document.getElementById("stageViewport");
+      const stageFrame = document.getElementById("stageFrame");
+      const openDeckBtn = document.getElementById("openDeckBtn");
+      const downloadPptBtn = document.getElementById("downloadPptBtn");
+
+      const edUndo = document.getElementById("edUndo");
+      const edRedo = document.getElementById("edRedo");
+      const elFontFamily = document.getElementById("elFontFamily");
+      const elFontSize = document.getElementById("elFontSize");
+      const elFontUp = document.getElementById("elFontUp");
+      const elFontDn = document.getElementById("elFontDn");
+      const elBold = document.getElementById("elBold");
+      const elItalic = document.getElementById("elItalic");
+      const elUnderline = document.getElementById("elUnderline");
+      const elAlignLeft = document.getElementById("elAlignLeft");
+      const elAlignCenter = document.getElementById("elAlignCenter");
+      const elAlignRight = document.getElementById("elAlignRight");
+      const elTextColor = document.getElementById("elTextColor");
+
+      const elBgColor = document.getElementById("elBgColor");
+      const elBgTransparent = document.getElementById("elBgTransparent");
+      const elBorderColor = document.getElementById("elBorderColor");
+      const elBorderWidth = document.getElementById("elBorderWidth");
+      const elRadius = document.getElementById("elRadius");
+      const elBringForward = document.getElementById("elBringForward");
+      const elSendBackward = document.getElementById("elSendBackward");
+      const elScaleUp = document.getElementById("elScaleUp");
+      const elScaleDn = document.getElementById("elScaleDn");
+      const elDuplicate = document.getElementById("elDuplicate");
+      const elDelete = document.getElementById("elDelete");
+
+      const elAddText = document.getElementById("elAddText");
+      const elAddCard = document.getElementById("elAddCard");
+      const elAddCircle = document.getElementById("elAddCircle");
+      const elAddLine = document.getElementById("elAddLine");
+      const elAddImage = document.getElementById("elAddImage");
+      const elImageInput = document.getElementById("elImageInput");
+      const elResetCustom = document.getElementById("elResetCustom");
+      const editorStatus = document.getElementById("editorStatus");
+
+      const SELECTION_REQUIRED_CONTROLS = [
+        elFontFamily, elFontSize, elFontUp, elFontDn, elBold, elItalic, elUnderline,
+        elAlignLeft, elAlignCenter, elAlignRight, elTextColor,
+        elBgColor, elBgTransparent, elBorderColor, elBorderWidth, elRadius,
+        elBringForward, elSendBackward, elScaleUp, elScaleDn, elDuplicate, elDelete
+      ];
+
+      let currentScale = 1;
+      let selectedEl = null;
+      const undoStacks = {};
+      const redoStacks = {};
+
+      function currentRecipe() {
+        return { templateId: state.template, colorId: state.color, fontId: state.font };
+      }
+
+      function pageKey() {
+        return `${state.topic}_${state.page}`;
+      }
+
+      function cleanStageSnapshotHtml() {
+        const clone = stageFrame.cloneNode(true);
+        clone.querySelectorAll("[data-edit-selected]").forEach((n) => n.removeAttribute("data-edit-selected"));
+        clone.querySelectorAll("[contenteditable]").forEach((n) => n.removeAttribute("contenteditable"));
+        return clone.innerHTML;
+      }
+
+      function pushHistory() {
+        const k = pageKey();
+        if (!undoStacks[k]) undoStacks[k] = [];
+        undoStacks[k].push(cleanStageSnapshotHtml());
+        if (undoStacks[k].length > 30) undoStacks[k].shift();
+        redoStacks[k] = [];
+        syncUndoButtons();
+      }
+
+      function syncUndoButtons() {
+        const k = pageKey();
+        edUndo.disabled = !(undoStacks[k] && undoStacks[k].length > 0);
+        edRedo.disabled = !(redoStacks[k] && redoStacks[k].length > 0);
+      }
+
+      function fitStage() {
+        const vw = Math.max(320, stageViewport.clientWidth - 16);
+        const vh = Math.max(200, stageViewport.clientHeight - 16);
+        currentScale = Math.min(vw / 1280, vh / 720, 1.35);
+        stageFrame.style.transform = `scale(${currentScale})`;
+      }
+
+      new ResizeObserver(fitStage).observe(stageViewport);
+
+      function persistState() {
+        const litePayload = JSON.stringify({
+          topic: state.topic,
+          template: state.template,
+          color: state.color,
+          font: state.font,
+          page: state.page,
+          pageOverrides: state.pageOverrides
+        });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            ...JSON.parse(litePayload),
+            customHtmlByPage: state.customHtmlByPage
+          }));
+        } catch {}
+        openDeckBtn.href = `decks/studio-deck.html#state=${encodeURIComponent(litePayload)}`;
+      }
+
+      function clearSelection() {
+        if (selectedEl) {
+          selectedEl.removeAttribute("data-edit-selected");
+          if (selectedEl.getAttribute("contenteditable") === "true") selectedEl.removeAttribute("contenteditable");
+        }
+        selectedEl = null;
+        SELECTION_REQUIRED_CONTROLS.forEach((c) => {
+          c.disabled = true;
+          c.classList?.remove("is-on");
+        });
+        editorStatus.textContent = "點舞台文字直接打字 · 點物件可拖拉改樣式";
+      }
+
+      function saveCustomStageHtml() {
+        state.customHtmlByPage[pageKey()] = cleanStageSnapshotHtml();
+        elResetCustom.style.visibility = "visible";
+        persistState();
+      }
+
+      function commitAction(mutateFn) {
+        pushHistory();
+        mutateFn();
+        saveCustomStageHtml();
+      }
+
+      function toHexInput(rgbStr, fallback) {
+        const hex = window.SlidePptxExporter?.parseColorToHex(rgbStr);
+        return hex ? `#${hex}` : fallback;
+      }
+
+      function syncControlValuesFromSelected() {
+        if (!selectedEl) return;
+        const cs = getComputedStyle(selectedEl);
+        elTextColor.value = toHexInput(cs.color, "#141413");
+        elBgColor.value = toHexInput(cs.backgroundColor, "#ffffff");
+        elBorderColor.value = toHexInput(cs.borderTopColor, "#1d2626");
+
+        const curFs = `${Math.round(parseFloat(cs.fontSize) || 16)}px`;
+        elFontSize.value = Array.from(elFontSize.options).some((o) => o.value === curFs) ? curFs : "";
+
+        const fw = parseInt(cs.fontWeight, 10);
+        elBold.classList.toggle("is-on", !Number.isNaN(fw) ? fw >= 600 : cs.fontWeight === "bold");
+        elItalic.classList.toggle("is-on", cs.fontStyle === "italic");
+        elUnderline.classList.toggle("is-on", String(cs.textDecorationLine || cs.textDecoration).includes("underline"));
+
+        const align = cs.textAlign;
+        elAlignLeft.classList.toggle("is-on", align === "left" || align === "start");
+        elAlignCenter.classList.toggle("is-on", align === "center");
+        elAlignRight.classList.toggle("is-on", align === "right" || align === "end");
+      }
+
+      function selectStageElement(el, makeEditable = false) {
+        if (!el || el === stageFrame || el === stageFrame.firstElementChild) return;
+        clearSelection();
+        selectedEl = el;
+        el.setAttribute("data-edit-selected", "true");
+        if (makeEditable) {
+          el.setAttribute("contenteditable", "true");
+          el.focus();
+        }
+        SELECTION_REQUIRED_CONTROLS.forEach((c) => { c.disabled = false; });
+        syncControlValuesFromSelected();
+        editorStatus.textContent = `選取 <${el.tagName.toLowerCase()}>（可拖拉 / 調整格式）`;
+      }
+
+      const sidebarEl = document.querySelector(".sidebar");
+
+      function render() {
+        const prevScroll = sidebarEl ? sidebarEl.scrollTop : 0;
+        clearSelection();
+        const recipe = currentRecipe();
+        const plan = SR.getDeckPlan(recipe, state.pageOverrides, state.topic, "./assets/");
+        if (state.page >= plan.length) state.page = 0;
+        const cur = plan[state.page];
+        const key = pageKey();
+
+        stageFrame.innerHTML = state.customHtmlByPage[key] || SR.renderSlideInner(recipe, cur);
+        elResetCustom.style.visibility = state.customHtmlByPage[key] ? "visible" : "hidden";
+        syncUndoButtons();
+        fitStage();
+
+        pageSelect.innerHTML = plan.map((s, idx) => {
+          const prefix = idx === 0 ? "封面" : String(idx).padStart(2, "0");
+          return `<option value="${idx}" ${idx === state.page ? "selected" : ""}>${prefix} · ${s.title}</option>`;
+        }).join("");
+        const layoutObj = SR.COMPOUND_LAYOUTS.find((l) => l.id === cur.mode);
+        stageModeLabel.textContent = layoutObj ? `${layoutObj.label} (${cur.mode})` : cur.mode;
+
+        const hiddenExamples = window.SlideImporter ? window.SlideImporter.getHiddenExampleIds() : [];
+        const restoreExamplesBtn = document.getElementById("restoreExamplesBtn");
+        if (restoreExamplesBtn) restoreExamplesBtn.style.display = hiddenExamples.length ? "inline-flex" : "none";
+
+        const visibleTopics = SR.TOPICS.filter((t) => !hiddenExamples.includes(t.id));
+        if (visibleTopics.length && !visibleTopics.some((t) => t.id === state.topic)) {
+          state.topic = visibleTopics[0].id;
+        }
+
+        topicBar.innerHTML = visibleTopics.length ? visibleTopics.map((t) => {
+          const isCustom = t.id.startsWith("custom-");
+          return `
+            <div class="topic-row">
+              <button type="button" class="topic-btn ${t.id === state.topic ? "is-active" : ""}" data-topic="${t.id}">
+                <span class="topic-badge ${isCustom ? "is-custom" : ""}">${isCustom ? "自訂" : "範例"}</span>
+                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.label}</span>
+              </button>
+              <button type="button" class="topic-del-btn" data-delete-topic="${t.id}" title="刪除此來源">✕</button>
+            </div>
+          `;
+        }).join("") : `<div style="font-size:11.5px;color:var(--muted);padding:6px 4px;">目前無資料來源，請點擊上方實色按鈕匯入資料或恢復範例。</div>`;
+
+        const presets = SR.STYLE_PRESETS || [];
+        stylePresetBar.innerHTML = presets.map((pr) => {
+          const isAct = pr.templateId === state.template && pr.colorId === state.color && pr.fontId === state.font;
+          const pal = SR.COLOR_PALETTES.find((c) => c.id === pr.colorId) || SR.COLOR_PALETTES[0];
+          return `
+            <button type="button" class="preset-btn ${isAct ? "is-active" : ""}" data-preset="${pr.id}">
+              <span class="preset-info">
+                <span class="preset-name">${pr.name}</span>
+                <span class="preset-desc">${pr.desc}</span>
+              </span>
+              <span class="color-swatches">
+                <span class="color-dot" style="background:${pal.bg};"></span>
+                <span class="color-dot" style="background:${pal.primary};"></span>
+                <span class="color-dot" style="background:${pal.fg};"></span>
+              </span>
+            </button>
+          `;
+        }).join("");
+
+        const coreLayouts = SR.CORE_LAYOUTS || SR.COMPOUND_LAYOUTS.slice(0, 10);
+        layoutSwitcher.innerHTML = coreLayouts.map((l) => `
+          <button type="button" class="layout-btn ${l.id === cur.mode ? "is-active" : ""}" data-layout="${l.id}" title="${l.desc}">
+            <span class="layout-title">${l.label}</span>
+            <span class="layout-meta">${l.cat}</span>
+          </button>
+        `).join("");
+
+        resetPageBtn.style.visibility = state.pageOverrides[state.page] ? "visible" : "hidden";
+        if (sidebarEl) sidebarEl.scrollTop = prevScroll;
+        persistState();
+      }
+
+      // Direct Drag-to-Move & Click-to-Select/Edit on Stage
+      let dragTarget = null;
+      let dragStartX = 0;
+      let dragStartY = 0;
+      let baseTx = 0;
+      let baseTy = 0;
+      let baseScale = 1;
+      let hasDragged = false;
+      let pushedDragHistory = false;
+
+      function parseTransform(el) {
+        const tx = parseFloat(el.dataset.tx || "0") || 0;
+        const ty = parseFloat(el.dataset.ty || "0") || 0;
+        const sc = parseFloat(el.dataset.sc || "1") || 1;
+        return { tx, ty, sc };
+      }
+
+      function applyTransform(el, tx, ty, sc) {
+        if (el.dataset.origTransform === undefined) {
+          el.dataset.origTransform = (el.style.transform && !el.dataset.tx) ? el.style.transform : "";
+        }
+        el.dataset.tx = String(tx);
+        el.dataset.ty = String(ty);
+        el.dataset.sc = String(sc);
+        const prefix = el.dataset.origTransform ? `${el.dataset.origTransform} ` : "";
+        el.style.transform = `${prefix}translate(${tx}px, ${ty}px) scale(${sc})`;
+      }
+
+      stageFrame.addEventListener("mousedown", (e) => {
+        if (e.button !== 0) return;
+        const rootSlide = stageFrame.firstElementChild;
+        let hit = e.target;
+        if (!hit || hit === stageFrame || hit === rootSlide) {
+          clearSelection();
+          return;
+        }
+        const svgParent = hit.closest("svg");
+        if (svgParent) hit = svgParent;
+
+        if (hit.getAttribute("contenteditable") === "true" && document.activeElement === hit) return;
+
+        dragTarget = hit;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        const t = parseTransform(hit);
+        baseTx = t.tx;
+        baseTy = t.ty;
+        baseScale = t.sc;
+        hasDragged = false;
+        pushedDragHistory = false;
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!dragTarget) return;
+        const dx = (e.clientX - dragStartX) / currentScale;
+        const dy = (e.clientY - dragStartY) / currentScale;
+        if (!hasDragged && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+          hasDragged = true;
+          if (!pushedDragHistory) {
+            pushHistory();
+            pushedDragHistory = true;
+          }
+          dragTarget.removeAttribute("contenteditable");
+          selectStageElement(dragTarget, false);
+        }
+        if (hasDragged) {
+          applyTransform(dragTarget, Math.round(baseTx + dx), Math.round(baseTy + dy), baseScale);
+        }
+      });
+
+      window.addEventListener("mouseup", () => {
+        if (!dragTarget) return;
+        const target = dragTarget;
+        dragTarget = null;
+        if (hasDragged) {
+          saveCustomStageHtml();
+          return;
+        }
+        const tag = target.tagName.toLowerCase();
+        const isLeafText = ["h1", "h2", "h3", "h4", "p", "span", "strong", "li", "blockquote"].includes(tag) ||
+          (tag === "div" && !target.querySelector("div, p, h1, h2, h3, h4, svg, img") && target.innerText.trim().length > 0);
+        selectStageElement(target, isLeafText);
+      });
+
+      let typingTimer = null;
+      stageFrame.addEventListener("input", () => {
+        if (!selectedEl) return;
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => { saveCustomStageHtml(); }, 250);
+      });
+
+      // Undo / Redo Actions
+      function doUndo() {
+        const k = pageKey();
+        if (!undoStacks[k] || !undoStacks[k].length) return;
+        if (!redoStacks[k]) redoStacks[k] = [];
+        redoStacks[k].push(cleanStageSnapshotHtml());
+        const prevHtml = undoStacks[k].pop();
+        state.customHtmlByPage[k] = prevHtml;
+        clearSelection();
+        stageFrame.innerHTML = prevHtml;
+        elResetCustom.style.visibility = "visible";
+        syncUndoButtons();
+        persistState();
+      }
+      function doRedo() {
+        const k = pageKey();
+        if (!redoStacks[k] || !redoStacks[k].length) return;
+        if (!undoStacks[k]) undoStacks[k] = [];
+        undoStacks[k].push(cleanStageSnapshotHtml());
+        const nextHtml = redoStacks[k].pop();
+        state.customHtmlByPage[k] = nextHtml;
+        clearSelection();
+        stageFrame.innerHTML = nextHtml;
+        elResetCustom.style.visibility = "visible";
+        syncUndoButtons();
+        persistState();
+      }
+      edUndo.addEventListener("click", doUndo);
+      edRedo.addEventListener("click", doRedo);
+
+      // Typography Actions
+      elFontFamily.addEventListener("change", () => {
+        if (!selectedEl || !elFontFamily.value) return;
+        commitAction(() => { selectedEl.style.fontFamily = elFontFamily.value; });
+      });
+      elFontSize.addEventListener("change", () => {
+        if (!selectedEl || !elFontSize.value) return;
+        commitAction(() => { selectedEl.style.fontSize = elFontSize.value; });
+        syncControlValuesFromSelected();
+      });
+      elFontUp.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const fs = parseFloat(getComputedStyle(selectedEl).fontSize) || 16;
+          selectedEl.style.fontSize = `${Math.min(140, Math.round(fs + 2))}px`;
+        });
+        syncControlValuesFromSelected();
+      });
+      elFontDn.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const fs = parseFloat(getComputedStyle(selectedEl).fontSize) || 16;
+          selectedEl.style.fontSize = `${Math.max(10, Math.round(fs - 2))}px`;
+        });
+        syncControlValuesFromSelected();
+      });
+      elBold.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const fw = parseInt(getComputedStyle(selectedEl).fontWeight, 10);
+          selectedEl.style.fontWeight = (!Number.isNaN(fw) && fw >= 600) ? "400" : "800";
+        });
+        syncControlValuesFromSelected();
+      });
+      elItalic.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const isIt = getComputedStyle(selectedEl).fontStyle === "italic";
+          selectedEl.style.fontStyle = isIt ? "normal" : "italic";
+        });
+        syncControlValuesFromSelected();
+      });
+      elUnderline.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const curDec = String(getComputedStyle(selectedEl).textDecorationLine || "");
+          selectedEl.style.textDecoration = curDec.includes("underline") ? "none" : "underline";
+        });
+        syncControlValuesFromSelected();
+      });
+      elAlignLeft.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.textAlign = "left"; });
+        syncControlValuesFromSelected();
+      });
+      elAlignCenter.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.textAlign = "center"; });
+        syncControlValuesFromSelected();
+      });
+      elAlignRight.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.textAlign = "right"; });
+        syncControlValuesFromSelected();
+      });
+      elTextColor.addEventListener("change", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.color = elTextColor.value; });
+      });
+
+      // Box / Layer / Transform Actions
+      elBgColor.addEventListener("change", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.backgroundColor = elBgColor.value; });
+      });
+      elBgTransparent.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.backgroundColor = "transparent"; });
+      });
+      elBorderColor.addEventListener("change", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          if ((parseFloat(getComputedStyle(selectedEl).borderTopWidth) || 0) === 0) {
+            selectedEl.style.borderWidth = "1.5px";
+            selectedEl.style.borderStyle = "solid";
+          }
+          selectedEl.style.borderColor = elBorderColor.value;
+        });
+      });
+      elBorderWidth.addEventListener("change", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          selectedEl.style.borderStyle = elBorderWidth.value === "0px" ? "none" : "solid";
+          selectedEl.style.borderWidth = elBorderWidth.value;
+          if (elBorderWidth.value !== "0px" && !selectedEl.style.borderColor) {
+            selectedEl.style.borderColor = elBorderColor.value;
+          }
+        });
+      });
+      elRadius.addEventListener("change", () => {
+        if (!selectedEl) return;
+        commitAction(() => { selectedEl.style.borderRadius = elRadius.value; });
+      });
+      elBringForward.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const z = parseInt(getComputedStyle(selectedEl).zIndex, 10) || 4;
+          selectedEl.style.position = getComputedStyle(selectedEl).position === "static" ? "relative" : getComputedStyle(selectedEl).position;
+          selectedEl.style.zIndex = String(z + 2);
+        });
+      });
+      elSendBackward.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const z = parseInt(getComputedStyle(selectedEl).zIndex, 10) || 4;
+          selectedEl.style.position = getComputedStyle(selectedEl).position === "static" ? "relative" : getComputedStyle(selectedEl).position;
+          selectedEl.style.zIndex = String(Math.max(1, z - 2));
+        });
+      });
+      elScaleUp.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const t = parseTransform(selectedEl);
+          applyTransform(selectedEl, t.tx, t.ty, +(t.sc + 0.1).toFixed(2));
+        });
+      });
+      elScaleDn.addEventListener("click", () => {
+        if (!selectedEl) return;
+        commitAction(() => {
+          const t = parseTransform(selectedEl);
+          applyTransform(selectedEl, t.tx, t.ty, Math.max(0.3, +(t.sc - 0.1).toFixed(2)));
+        });
+      });
+      elDuplicate.addEventListener("click", () => {
+        const root = stageFrame.firstElementChild;
+        if (!selectedEl || !root) return;
+        let cloned = null;
+        commitAction(() => {
+          cloned = selectedEl.cloneNode(true);
+          cloned.removeAttribute("data-edit-selected");
+          cloned.removeAttribute("contenteditable");
+          const t = parseTransform(selectedEl);
+          cloned.style.position = "absolute";
+          cloned.style.left = "96px";
+          cloned.style.top = "96px";
+          cloned.style.zIndex = "22";
+          applyTransform(cloned, t.tx + 24, t.ty + 24, t.sc);
+          root.appendChild(cloned);
+        });
+        if (cloned) selectStageElement(cloned, false);
+      });
+      elDelete.addEventListener("click", () => {
+        if (!selectedEl) return;
+        const toDel = selectedEl;
+        commitAction(() => {
+          clearSelection();
+          toDel.remove();
+        });
+      });
+
+      // Insert Elements
+      elAddText.addEventListener("click", () => {
+        const root = stageFrame.firstElementChild;
+        if (!root) return;
+        let box = null;
+        commitAction(() => {
+          const tpl = SR.getTemplate(currentRecipe());
+          box = document.createElement("div");
+          box.textContent = "雙擊或點此輸入標題與內容";
+          box.style.cssText = `position:absolute;left:96px;top:96px;z-index:20;padding:8px 14px;background:${tpl.surface};color:${tpl.fg};border:1.5px solid ${tpl.primary};font-family:${tpl.bodyFont};font-size:22px;font-weight:700;cursor:move;`;
+          root.appendChild(box);
+        });
+        if (box) selectStageElement(box, true);
+      });
+
+      elAddCard.addEventListener("click", () => {
+        const root = stageFrame.firstElementChild;
+        if (!root) return;
+        let card = null;
+        commitAction(() => {
+          const tpl = SR.getTemplate(currentRecipe());
+          card = document.createElement("div");
+          card.textContent = "新增卡片重點區塊";
+          card.style.cssText = `position:absolute;left:120px;top:140px;width:300px;height:140px;z-index:18;padding:18px;background:${tpl.tint};color:${tpl.fg};border:1.5px solid ${tpl.primary};border-radius:${tpl.radius}px;font-family:${tpl.bodyFont};font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:move;`;
+          root.appendChild(card);
+        });
+        if (card) selectStageElement(card, false);
+      });
+
+      elAddCircle.addEventListener("click", () => {
+        const root = stageFrame.firstElementChild;
+        if (!root) return;
+        let cir = null;
+        commitAction(() => {
+          const tpl = SR.getTemplate(currentRecipe());
+          cir = document.createElement("div");
+          cir.textContent = "焦點";
+          cir.style.cssText = `position:absolute;left:180px;top:160px;width:110px;height:110px;z-index:19;background:${tpl.primary};color:#FFFFFF;border-radius:999px;font-family:${tpl.titleFont};font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:move;`;
+          root.appendChild(cir);
+        });
+        if (cir) selectStageElement(cir, true);
+      });
+
+      elAddLine.addEventListener("click", () => {
+        const root = stageFrame.firstElementChild;
+        if (!root) return;
+        let line = null;
+        commitAction(() => {
+          const tpl = SR.getTemplate(currentRecipe());
+          line = document.createElement("div");
+          line.style.cssText = `position:absolute;left:140px;top:240px;width:360px;height:4px;z-index:18;background:${tpl.primary};cursor:move;`;
+          root.appendChild(line);
+        });
+        if (line) selectStageElement(line, false);
+      });
+
+      elAddImage.addEventListener("click", () => elImageInput.click());
+      elImageInput.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const root = stageFrame.firstElementChild;
+          if (!root) return;
+          let img = null;
+          commitAction(() => {
+            img = document.createElement("img");
+            img.src = String(reader.result);
+            img.alt = file.name;
+            img.style.cssText = "position:absolute;left:140px;top:120px;width:360px;height:240px;object-fit:cover;z-index:20;border-radius:8px;cursor:move;border:1px solid rgba(0,0,0,0.12);";
+            root.appendChild(img);
+          });
+          if (img) selectStageElement(img, false);
+        };
+        reader.readAsDataURL(file);
+        elImageInput.value = "";
+      });
+
+      elResetCustom.addEventListener("click", () => {
+        const k = pageKey();
+        delete state.customHtmlByPage[k];
+        undoStacks[k] = [];
+        redoStacks[k] = [];
+        render();
+      });
+
+      // Sidebar Controls
+      topicBar.addEventListener("click", (e) => {
+        const delBtn = e.target.closest("button[data-delete-topic]");
+        if (delBtn) {
+          const delId = delBtn.dataset.deleteTopic;
+          if (delId.startsWith("custom-")) {
+            if (window.SlideImporter) window.SlideImporter.deleteCustomTopic(SR, delId);
+          } else {
+            if (window.SlideImporter) window.SlideImporter.hideExampleId(delId);
+          }
+          const hidden = window.SlideImporter ? window.SlideImporter.getHiddenExampleIds() : [];
+          const remaining = SR.TOPICS.filter((t) => !hidden.includes(t.id));
+          if (state.topic === delId && remaining.length) {
+            state.topic = remaining[0].id;
+            state.page = 0;
+            state.pageOverrides = {};
+          }
+          render();
+          return;
+        }
+        const b = e.target.closest("button[data-topic]");
+        if (!b) return;
+        state.topic = b.dataset.topic;
+        state.page = 0;
+        state.pageOverrides = {};
+        render();
+      });
+
+      const restoreExamplesBtn = document.getElementById("restoreExamplesBtn");
+      if (restoreExamplesBtn) {
+        restoreExamplesBtn.addEventListener("click", () => {
+          if (window.SlideImporter) window.SlideImporter.restoreHiddenExamples();
+          render();
+        });
+      }
+
+      stylePresetBar.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-preset]");
+        if (!b) return;
+        const pr = (SR.STYLE_PRESETS || []).find((p) => p.id === b.dataset.preset);
+        if (!pr) return;
+        state.template = pr.templateId;
+        state.color = pr.colorId;
+        state.font = pr.fontId;
+        state.customHtmlByPage = {};
+        render();
+      });
+
+      layoutSwitcher.addEventListener("click", (e) => {
+        const b = e.target.closest("button[data-layout]");
+        if (!b) return;
+        state.pageOverrides[state.page] = b.dataset.layout;
+        delete state.customHtmlByPage[pageKey()];
+        render();
+      });
+
+      resetPageBtn.addEventListener("click", () => {
+        delete state.pageOverrides[state.page];
+        delete state.customHtmlByPage[pageKey()];
+        render();
+      });
+
+      const getTotalPages = () => {
+        const top = SR.TOPICS.find((t) => t.id === state.topic);
+        return (top && top.count) ? top.count : 20;
+      };
+
+      pageSelect.addEventListener("change", (e) => { state.page = Number(e.target.value) || 0; render(); });
+      document.getElementById("prevBtn").addEventListener("click", () => { const n = getTotalPages(); state.page = (state.page + n - 1) % n; render(); });
+      document.getElementById("nextBtn").addEventListener("click", () => { const n = getTotalPages(); state.page = (state.page + 1) % n; render(); });
+
+      window.addEventListener("keydown", (e) => {
+        const active = document.activeElement;
+        const inTyping = active && (active.isContentEditable || active === pageSelect || active.tagName === "SELECT" || active.tagName === "INPUT" || active.tagName === "TEXTAREA");
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !inTyping) {
+          e.preventDefault();
+          doUndo();
+          return;
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y" && !inTyping) {
+          e.preventDefault();
+          doRedo();
+          return;
+        }
+        if (inTyping) return;
+        if (e.key === "ArrowLeft") { const n = getTotalPages(); state.page = (state.page + n - 1) % n; render(); }
+        if (e.key === "ArrowRight") { const n = getTotalPages(); state.page = (state.page + 1) % n; render(); }
+        if ((e.key === "Delete" || e.key === "Backspace") && selectedEl) {
+          e.preventDefault();
+          elDelete.click();
+        }
+      });
+
+      // 匯入文字 / Word / PPT / PDF 生成簡報 Modal
+      const importModal = document.getElementById("importModal");
+      const openImportModalBtn = document.getElementById("openImportModalBtn");
+      const closeImportModalBtn = document.getElementById("closeImportModalBtn");
+      const cancelImportBtn = document.getElementById("cancelImportBtn");
+      const importDropzone = document.getElementById("importDropzone");
+      const importFileInput = document.getElementById("importFileInput");
+      const importTitleInput = document.getElementById("importTitleInput");
+      const importTextInput = document.getElementById("importTextInput");
+      const importStatusMsg = document.getElementById("importStatusMsg");
+      const copyAiPromptBtn = document.getElementById("copyAiPromptBtn");
+      const runImportBtn = document.getElementById("runImportBtn");
+
+      const setImportModalOpen = (open) => {
+        importModal.classList.toggle("is-open", open);
+        importModal.setAttribute("aria-hidden", open ? "false" : "true");
+        if (open) importStatusMsg.textContent = "";
+      };
+
+      openImportModalBtn.addEventListener("click", () => setImportModalOpen(true));
+      closeImportModalBtn.addEventListener("click", () => setImportModalOpen(false));
+      cancelImportBtn.addEventListener("click", () => setImportModalOpen(false));
+      const clearImportBtn = document.getElementById("clearImportBtn");
+      if (clearImportBtn) {
+        clearImportBtn.addEventListener("click", () => {
+          importTitleInput.value = "";
+          importTextInput.value = "";
+          importFileInput.value = "";
+          importStatusMsg.style.color = "#0f5257";
+          importStatusMsg.textContent = "已清空內容與檔案，可重新上傳或貼上資料。";
+        });
+      }
+      importModal.addEventListener("click", (e) => {
+        if (e.target === importModal) setImportModalOpen(false);
+      });
+
+      const handleImportedFile = async (file) => {
+        if (!file || !window.SlideImporter) return;
+        importStatusMsg.style.color = "#0f5257";
+        importStatusMsg.textContent = `⏳ 正在讀取「${file.name}」...`;
+        try {
+          const text = await window.SlideImporter.readFileAsText(file);
+          importTextInput.value = text;
+          if (!importTitleInput.value.trim()) {
+            importTitleInput.value = file.name.replace(/\.[^.]+$/, "");
+          }
+          importStatusMsg.textContent = `✅ 已讀取「${file.name}」（共 ${text.length} 字），請按「解析並套用」生成簡報。`;
+        } catch (err) {
+          importStatusMsg.style.color = "#b91c1c";
+          importStatusMsg.textContent = `❌ 讀檔失敗：${err?.message || err}`;
+        }
+      };
+
+      importDropzone.addEventListener("click", () => importFileInput.click());
+      importFileInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) handleImportedFile(e.target.files[0]);
+        e.target.value = "";
+      });
+      importDropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        importDropzone.classList.add("is-dragover");
+      });
+      importDropzone.addEventListener("dragleave", () => importDropzone.classList.remove("is-dragover"));
+      importDropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        importDropzone.classList.remove("is-dragover");
+        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleImportedFile(e.dataTransfer.files[0]);
+        }
+      });
+
+      copyAiPromptBtn.addEventListener("click", async () => {
+        if (!window.SlideImporter) return;
+        const prompt = window.SlideImporter.getAiPromptTemplate();
+        try {
+          await navigator.clipboard.writeText(prompt);
+          importStatusMsg.style.color = "#0f5257";
+          importStatusMsg.textContent = "✅ 已複製 AI 結構化整理提示詞！可貼給 AI 整理資料後，再把結果 JSON 貼回這裡。";
+        } catch {
+          importTextInput.value = prompt;
+          importStatusMsg.textContent = "已將 AI 提示詞範本填入輸入框，可直接複製使用。";
+        }
+      });
+
+      const fillSampleMdBtn = document.getElementById("fillSampleMdBtn");
+      if (fillSampleMdBtn) {
+        fillSampleMdBtn.addEventListener("click", () => {
+          importTitleInput.value = "台北獨立咖啡館探索筆記";
+          importTextInput.value = [
+            "## 為什麼探索台北獨立咖啡館？",
+            "- 空間氛圍多元：結合老宅翻修、木質採光與安靜閱讀角落",
+            "- 烘焙風味清晰：淺中焙單品與手沖萃取呈現產區花果調",
+            "- 適合遠端工作：具備穩定插座、Wi-Fi 與不限時座位設計",
+            "",
+            "## 精選店家數據比較",
+            "- 興波咖啡：世界冠軍手沖，綜合評分 95 分",
+            "- 沛洛瑟珈琲店：自家精準烘焙，風味表現 92 分",
+            "- 珈琲部：深夜營業至凌晨，安靜指數 90 分",
+            "",
+            "## 實地探店記錄流程",
+            "- 步驟一：建立地區與交通動線清單",
+            "- 步驟二：實測採光、桌面高度與插座密度",
+            "- 步驟三：紀錄豆單烘焙度與手沖風味筆記"
+          ].join("\n");
+          importStatusMsg.style.color = "#0f5257";
+          importStatusMsg.textContent = "✅ 已載入結構化示範大綱，點擊右下角「解析並套用」即可生成簡報！";
+        });
+      }
+
+      runImportBtn.addEventListener("click", () => {
+        if (!window.SlideImporter) return;
+        try {
+          const deck = window.SlideImporter.importAndRegister(SR, importTextInput.value, importTitleInput.value.trim());
+          state.topic = deck.id;
+          state.page = 0;
+          state.pageOverrides = {};
+          setImportModalOpen(false);
+          render();
+        } catch (err) {
+          importStatusMsg.style.color = "#b91c1c";
+          importStatusMsg.textContent = `❌ 解析失敗：${err?.message || err}`;
+        }
+      });
+
+      downloadPptBtn.addEventListener("click", async () => {
+        const orig = downloadPptBtn.textContent;
+        downloadPptBtn.disabled = true;
+        downloadPptBtn.textContent = "⏳ 正在逐元素產生可編輯 PPT...";
+        try {
+          const top = SR.TOPICS.find((t) => t.id === state.topic) || SR.TOPICS[0];
+          const tpl = SR.getTemplate(currentRecipe());
+          await window.SlidePptxExporter.exportDeck({
+            topicId: state.topic,
+            recipe: currentRecipe(),
+            pageOverrides: state.pageOverrides,
+            customHtmlByPage: state.customHtmlByPage,
+            assetBase: "./assets/",
+            deckTitle: `${top.shortLabel || top.label}-${tpl.name}`
+          });
+        } catch (err) {
+          alert("匯出 PPT 失敗：" + (err?.message || err));
+        } finally {
+          downloadPptBtn.disabled = false;
+          downloadPptBtn.textContent = orig;
+        }
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>
