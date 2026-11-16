@@ -31,7 +31,7 @@
   hud.setAttribute("aria-label", "簡報控制列");
   hud.innerHTML = `
     <div class="hud-group">
-      <a href="../index.html" title="返回設計工作室">← 工作室</a>
+      <a href="${escapeHtml(document.documentElement.dataset.studioUrl || "../index.html")}" title="返回設計工作室">← 工作室</a>
       <span class="hud-title">${escapeHtml(deckTitle)}</span>
     </div>
     <div class="hud-group">
@@ -50,6 +50,7 @@
 
   document.body.append(progress, notesDrawer, hud);
 
+  hud.querySelector('[data-action="notes"]').hidden = !slides.some(slide => slide.querySelector(".notes")?.textContent.trim());
   const counterEl = hud.querySelector(".hud-counter");
   const notesBody = notesDrawer.querySelector(".notes-body");
   const editBtn = hud.querySelector('button[data-action="edit"]');
@@ -138,6 +139,7 @@
     counterEl.textContent = `${pad(current + 1)} / ${pad(slides.length)}`;
     progress.style.width = `${((current + 1) / slides.length) * 100}%`;
     window.history.replaceState(null, "", `#${current + 1}`);
+    window.dispatchEvent(new CustomEvent("atelier:slidechange", {detail:{index:current}}));
 
     const noteEl = slides[current].querySelector(".notes");
     notesBody.textContent = noteEl
@@ -179,27 +181,49 @@
     if (editMode) revealAll(slides[current]);
   }
 
-  function downloadEditedHtml() {
+  async function downloadEditedHtml() {
     if (editMode) toggleEdit(false);
-    // 收集當前頁面的 style 標籤與 deck 內容，匯出為可編輯 HTML
-    const cloneDoc = document.documentElement.cloneNode(true);
-    cloneDoc.querySelectorAll(".hud, .hud-progress, .notes-drawer").forEach((n) => n.remove());
-    const vp = cloneDoc.querySelector(".stage-viewport");
-    if (vp) {
-      const d = vp.querySelector(".deck");
-      if (d) {
-        d.style.transform = "";
-        vp.parentNode.insertBefore(d, vp);
+    const btn=hud.querySelector('[data-action="download"]');
+    btn.disabled=true;
+    try {
+      const engineCode = async name => {
+        const embedded=document.querySelector(`script[data-atelier-engine="${name}"]`);
+        if (embedded) return embedded.textContent;
+        const source=Array.from(document.scripts).find(script=>script.src && new URL(script.src).pathname.endsWith(`/engine/${name}.js`));
+        const response=await fetch(source?.src || new URL(`../engine/${name}.js`,location.href));
+        if (!response.ok) throw new Error("無法封裝播放程式，請確認網路連線。");
+        return response.text();
+      };
+      const [exporterCode,playerCode]=await Promise.all([engineCode("pptx-exporter"),engineCode("deck")]);
+      const cloneDoc=document.documentElement.cloneNode(true);
+      cloneDoc.dataset.studioUrl=document.documentElement.dataset.studioUrl || new URL("../index.html",location.href).href;
+      cloneDoc.querySelectorAll("script, .hud, .hud-progress, .notes-drawer, #studioQuickPill, .hud-fullscreen-status").forEach(n=>n.remove());
+      cloneDoc.querySelectorAll("[contenteditable]").forEach(n=>n.removeAttribute("contenteditable"));
+      cloneDoc.querySelector("body").classList.remove("is-overview","is-editing");
+      for (const link of cloneDoc.querySelectorAll('link[rel="stylesheet"]')) {
+        const url=new URL(link.getAttribute("href"),location.href);
+        if (url.origin!==location.origin) {link.href=url.href;continue;}
+        const response=await fetch(url);
+        if (!response.ok) throw new Error("無法封裝投影片樣式。");
+        const style=document.createElement("style");style.textContent=await response.text();link.replaceWith(style);
       }
-      vp.remove();
-    }
-    const html = "<!DOCTYPE html>\n" + cloneDoc.outerHTML;
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${(deckTitle || "presentation").replace(/[^\w\u4e00-\u9fff-]+/g, "-")}.html`;
-    a.click();
-    URL.revokeObjectURL(a.href);
+      for (const img of cloneDoc.querySelectorAll("img[src]")) {
+        const src=img.getAttribute("src");
+        if (src.startsWith("data:")) continue;
+        const response=await fetch(new URL(src,location.href));
+        if (!response.ok) throw new Error("無法封裝圖片，請確認圖片可讀取。");
+        img.src=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;response.blob().then(blob=>reader.readAsDataURL(blob),reject);});
+      }
+      const vp=cloneDoc.querySelector(".stage-viewport");
+      if (vp) {const d=vp.querySelector(".deck");if(d){d.style.transform="";vp.parentNode.insertBefore(d,vp);}vp.remove();}
+      for (const [name,code] of [["pptx-exporter",exporterCode],["deck",playerCode]]) {
+        const script=document.createElement("script");script.dataset.atelierEngine=name;script.textContent=code;cloneDoc.querySelector("body").append(script);
+      }
+      const blob=new Blob(["<!DOCTYPE html>\n"+cloneDoc.outerHTML],{type:"text/html;charset=utf-8"});
+      const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${(deckTitle || "presentation").replace(/[^\w\u4e00-\u9fff-]+/g,"-")}.html`;a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    } catch(err) {alert("HTML 下載失敗："+(err.message || err));}
+    finally {btn.disabled=false;}
   }
 
   function exportPdf() {
@@ -228,11 +252,16 @@
     }
   }
 
-  function toggleFullscreen() {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.();
-    } else {
-      document.exitFullscreen?.();
+  async function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) await document.documentElement.requestFullscreen?.();
+      else await document.exitFullscreen?.();
+    } catch {
+      const notice=document.createElement("div");
+      notice.className="hud-fullscreen-status";notice.setAttribute("role","status");
+      notice.style.cssText="position:fixed;right:16px;bottom:64px;z-index:2000;background:#17202a;color:#fff;padding:12px 16px;font:14px system-ui;";
+      notice.textContent="瀏覽器未允許全螢幕，仍可使用目前的放映模式。";
+      document.body.append(notice);setTimeout(()=>notice.remove(),4000);
     }
   }
 

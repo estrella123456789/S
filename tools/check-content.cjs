@@ -15,6 +15,9 @@ for(const [id,expected] of Object.entries(demoDigests)){
   assert.equal(crypto.createHash('sha256').update(JSON.stringify(originalPlan)).digest('hex'),expected.sha256,`Keep the complete original ${id} dataset`);
 }
 const imported = SI.parseRawContentToDeck(fs.readFileSync('examples/rules-demo.json','utf8'));
+const extended = SI.parseRawContentToDeck(fs.readFileSync('examples/review-checklist.json','utf8'));
+assert.equal(extended.pages.length,4,'New content follows the same contract without changing the engine');
+assert.ok(extended.pages.every(p=>p.points.length<=4&&!p.image&&!p.highlightStat));
 assert.equal(imported.pages[0].points.length,0,'An empty cover must stay empty');
 assert.ok(imported.pages.every(p=>!p.image&&!p.kicker),'Optional content must stay absent');
 SR.registerCustomTopic(imported);

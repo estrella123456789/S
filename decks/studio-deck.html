@@ -13,9 +13,9 @@
   <div id="studioQuickPill"><button type="button" id="studioPillToggle" aria-expanded="false">簡報設定</button><div id="studioQuickPanel"><div class="sq-label">主題</div><div id="sqTopics" class="sq-grid"></div><div class="sq-label">整份簡報風格</div><div id="sqPresets" class="sq-grid"></div><div class="sq-label">本頁版面</div><div id="sqLayouts" class="sq-grid"></div><p class="sq-help">每套風格包含固定的色彩與字體。變更風格或版面會重新套用設計；舞台上的自訂編修請先確認保存。</p></div></div>
   <main class="deck" id="studioDeck"></main>
   <script src="../engine/template-svgs.js"></script>
-  <script src="../engine/renderer.js?v=library-30"></script>
+  <script src="../engine/renderer.js?v=controls-audit"></script>
   <script src="../engine/pptx-exporter.js"></script>
-  <script src="../engine/importer.js?v=library-30"></script>
+  <script src="../engine/importer.js?v=controls-audit"></script>
   <script>
     (() => {
       const SR = window.SlideRenderer;
@@ -44,11 +44,11 @@
       plan.forEach((data,i)=>{
         const slide=document.createElement("section"); slide.className="slide";
         slide.innerHTML=state.customHtmlByPage[`${state.topic}_${i}`] || SR.renderSlideInner(recipe,data);
-        const notes=document.createElement("aside");notes.className="notes";notes.textContent=data.title;slide.append(notes);deck.append(slide);
+        const notes=document.createElement("aside");notes.className="notes";notes.textContent=data.notes || "";slide.append(notes);deck.append(slide);
       });
       const current=()=>Math.max(0,Array.from(deck.children).findIndex(s=>s.classList.contains("is-active")));
       const save=()=>{state.page=current();try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
-      window.addEventListener("hashchange",save);
+      window.addEventListener("atelier:slidechange",save);
       // Changes made during playback survive returning to the studio.
       deck.addEventListener("input",e=>{const slide=e.target.closest(".slide");if(!slide)return;const clone=slide.cloneNode(true);clone.querySelectorAll(".notes").forEach(n=>n.remove());clone.querySelectorAll("[contenteditable]").forEach(n=>n.removeAttribute("contenteditable"));state.customHtmlByPage[`${state.topic}_${Array.from(deck.children).indexOf(slide)}`]=clone.innerHTML;save();});
       const button=document.getElementById("studioPillToggle"),panel=document.getElementById("studioQuickPanel");
@@ -64,6 +64,6 @@
       try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}
     })();
   </script>
-  <script src="../engine/deck.js"></script>
+  <script src="../engine/deck.js?v=controls-audit"></script>
 </body>
 </html>

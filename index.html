@@ -503,6 +503,7 @@
       .stage-viewport{height:260px;min-height:260px}.editor-ribbon{overflow:visible}
     }
   </style>
+<style>@media(max-width:760px){.import-modal-backdrop{padding:12px}.import-modal{width:100%;min-width:0}.import-modal [style*="display:flex"]{flex-wrap:wrap;gap:8px}.import-modal .btn,.import-modal .ed-btn{white-space:normal}}</style>
 </head>
 <body>
   <header class="topbar">
@@ -514,7 +515,7 @@
       <a class="btn" href="decks/showcase-20.html">AI 資安論文版</a>
       <a class="btn" href="decks/01-design-atlas-20.html">Lumina 商業企劃版</a>
       <button type="button" class="btn btn-accent" id="downloadPptBtn">⬇ 下載可編輯 PPT (.pptx)</button>
-      <a class="btn btn-primary" id="openDeckBtn" href="decks/studio-deck.html">全螢幕播放與 PDF →</a>
+      <a class="btn btn-primary" id="openDeckBtn" href="decks/studio-deck.html">放映與匯出 PDF →</a>
     </nav>
   </header>
 
@@ -597,7 +598,7 @@
           <button type="button" class="ed-btn" id="elAlignCenter" disabled title="置中對齊">置中</button>
           <button type="button" class="ed-btn" id="elAlignRight" disabled title="靠右對齊">靠右</button>
           <label class="ed-label">字色<input type="color" class="ed-color" id="elTextColor" value="#141413" disabled /></label>
-          <span class="ed-status" id="editorStatus">點舞台文字直接打字 · 點物件可拖拉改樣式</span>
+          <span class="ed-status" id="editorStatus">先點選投影片文字或物件，灰色工具才會啟用</span>
         </div>
 
         <div class="editor-row">
@@ -645,7 +646,7 @@
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
         <div>
           <h2 id="importModalTitle" style="margin:0;font-size:17px;font-weight:800;">匯入資料 / 檔案生成簡報</h2>
-          <p style="margin:3px 0 0;font-size:12px;color:var(--muted);">支援直接貼上文字、Markdown、標準 JSON，或上傳 Word (.docx)、PowerPoint (.pptx)、PDF (.pdf)、TXT / MD 檔案。</p>
+          <p style="margin:3px 0 0;font-size:12px;color:var(--muted);">支援文字、Markdown、JSON、CSV、Word、PowerPoint 與 PDF 的文字內容，套用 4 套風格與 30 種版面。這裡不會自動呼叫 AI；需要語意整理時，可複製下方指令給 AI，再匯入它產生的 JSON。</p>
         </div>
         <button type="button" class="btn" id="closeImportModalBtn">✕ 關閉</button>
       </div>
@@ -658,7 +659,7 @@
       <div class="import-dropzone" id="importDropzone">
         <input type="file" id="importFileInput" accept=".txt,.md,.csv,.json,.docx,.pptx,.pdf" style="display:none;" />
         <div style="font-size:13px;font-weight:700;color:#0f5257;">點擊選擇檔案，或將檔案拖放到此處</div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">支援格式：.docx (Word) / .pptx (簡報) / .pdf / .md / .txt / .json</div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">支援格式：.docx / .pptx / .pdf / .md / .txt / .json / .csv；匯入以文字整理為主，不保留來源檔的原始版面。</div>
       </div>
 
       <div>
@@ -666,7 +667,7 @@
           <label for="importTextInput" style="font-size:12px;font-weight:700;">原始內容 / 大綱 / Canonical JSON</label>
           <div style="display:flex;gap:6px;">
             <button type="button" class="ed-btn" id="fillSampleMdBtn" title="填入示範大綱快速測試">📝 載入範例大綱</button>
-            <button type="button" class="ed-btn" id="copyAiPromptBtn" title="複製 AI 結構化整理提示詞">📋 複製 AI 整理提示詞</button>
+            <button type="button" class="ed-btn" id="copyAiPromptBtn" title="複製 AI 結構化整理提示詞">複製給 AI 的整理指令</button>
           </div>
         </div>
         <textarea class="import-textarea" id="importTextInput" placeholder="在此貼上文章、筆記、會議紀錄、Markdown 大綱（使用 # / ## 分頁），或貼上 AI 產生的 Canonical Slide Content JSON..."></textarea>
@@ -678,16 +679,16 @@
         <button type="button" class="btn" id="clearImportBtn" style="color:#991b1b;border-color:#fca5a5;">🗑 清空 / 移除檔案</button>
         <div style="display:flex;align-items:center;gap:8px;">
           <button type="button" class="btn" id="cancelImportBtn">取消</button>
-          <button type="button" class="btn btn-primary" id="runImportBtn">✨ 解析並套用到 6 模板 × 30 版面</button>
+          <button type="button" class="btn btn-primary" id="runImportBtn">解析並套用</button>
         </div>
       </div>
     </div>
   </div>
 
   <script src="engine/template-svgs.js"></script>
-  <script src="engine/renderer.js?v=library-30"></script>
+  <script src="engine/renderer.js?v=controls-audit"></script>
   <script src="engine/pptx-exporter.js"></script>
-  <script src="engine/importer.js?v=library-30"></script>
+  <script src="engine/importer.js?v=controls-audit"></script>
   <script>
     (() => {
       const SR = window.SlideRenderer;
@@ -775,6 +776,7 @@
 
       let currentScale = 1;
       let selectedEl = null;
+      let typingHistoryElement = null;
       const undoStacks = {};
       const redoStacks = {};
 
@@ -841,11 +843,12 @@
           if (selectedEl.getAttribute("contenteditable") === "true") selectedEl.removeAttribute("contenteditable");
         }
         selectedEl = null;
+        typingHistoryElement = null;
         SELECTION_REQUIRED_CONTROLS.forEach((c) => {
           c.disabled = true;
           c.classList?.remove("is-on");
         });
-        editorStatus.textContent = "點舞台文字直接打字 · 點物件可拖拉改樣式";
+        editorStatus.textContent = "先點選投影片文字或物件，灰色工具才會啟用";
       }
 
       function saveCustomStageHtml() {
@@ -907,6 +910,16 @@
         clearSelection();
         const hiddenNow = window.SlideImporter?.getHiddenExampleIds() || [];
         const firstVisible = SR.TOPICS.find(t => !hiddenNow.includes(t.id));
+        if (!firstVisible) {
+          topicBar.replaceChildren(); pageSelect.replaceChildren(); layoutSwitcher.replaceChildren();
+          document.getElementById("restoreExamplesBtn").style.display = "inline-flex";
+          downloadPptBtn.disabled = true;
+          openDeckBtn.removeAttribute("href"); openDeckBtn.setAttribute("aria-disabled", "true");
+          stageModeLabel.textContent = "尚未選擇內容";
+          stageFrame.innerHTML = '<div style="width:1280px;height:720px;background:#faf6ee;display:flex;align-items:center;justify-content:center;font-size:32px;color:#233030;">請匯入內容，或按「恢復範例」</div>';
+          fitStage(); return;
+        }
+        downloadPptBtn.disabled = false; openDeckBtn.removeAttribute("aria-disabled");
         if (firstVisible && !SR.TOPICS.some(t => t.id === state.topic && !hiddenNow.includes(t.id))) {
           state.topic = firstVisible.id;
           state.page = 0;
@@ -946,7 +959,7 @@
                 <span class="topic-badge ${isCustom ? "is-custom" : ""}">${isCustom ? "自訂" : "範例"}</span>
                 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeText(t.label)}</span>
               </button>
-              <button type="button" class="topic-del-btn" data-delete-topic="${t.id}" title="刪除此來源">✕</button>
+              <button type="button" class="topic-del-btn" data-delete-topic="${t.id}" title="${isCustom ? "刪除自訂來源" : "隱藏範例（可恢復）"}">✕</button>
             </div>
           `;
         }).join("") : `<div style="font-size:11.5px;color:var(--muted);padding:6px 4px;">目前無資料來源，請點擊上方實色按鈕匯入資料或恢復範例。</div>`;
@@ -1067,6 +1080,12 @@
         selectStageElement(target, isLeafText);
       });
 
+      stageFrame.addEventListener("beforeinput", () => {
+        if (selectedEl && typingHistoryElement !== selectedEl) {
+          pushHistory();
+          typingHistoryElement = selectedEl;
+        }
+      });
       stageFrame.addEventListener("input", () => {
         if (!selectedEl) return;
         saveCustomStageHtml();

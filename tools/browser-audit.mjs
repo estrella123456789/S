@@ -11,6 +11,7 @@ const browser=spawn('C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msed
 let ws;
 const results={pages:[],errors:[],checks:[]};
 const uiOnly=process.argv.includes('--ui-only');
+const extensionOnly=process.argv.includes('--extension-only');
 try{
   let targets;
   for(let i=0;i<60;i++){try{targets=await(await fetch('http://127.0.0.1:9335/json/list')).json();if(targets.some(t=>t.type==='page'))break;}catch{}await delay(200);}
@@ -24,20 +25,20 @@ try{
   await send('Page.enable');await send('Runtime.enable');
   await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:path.join(out,'downloads')});
   await send('Emulation.setDeviceMetricsOverride',{width:1280,height:720,deviceScaleFactor:1,mobile:false});
-  const navigate=async(url)=>{await send('Page.navigate',{url:`http://127.0.0.1:8769/${url}`});await delay(120);for(let i=0;i<60;i++){const ready=await evaluate('document.readyState === "complete"');if(ready)break;await delay(100);} };
+  const navigate=async(url)=>{await send('Page.navigate',{url:`http://127.0.0.1:8769/${url}`});await delay(120);for(let i=0;i<60;i++){const ready=await evaluate(url.includes('render.html')?'document.readyState === "complete" && document.body.dataset.ready === "true"':'document.readyState === "complete"');if(ready)break;await delay(100);} };
   const screenshot=async(name)=>{const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(path.join(out,name),Buffer.from(shot.data,'base64'));};
   const geometry=()=>evaluate(`(()=>{const stage=document.querySelector('#slide>div');const bounds=stage.getBoundingClientRect();const issues=[];for(const el of stage.querySelectorAll('*')){if(!el.childNodes.length||!Array.from(el.childNodes).some(n=>n.nodeType===3&&n.textContent.trim()))continue;const r=el.getBoundingClientRect();if(r.left<bounds.left-1||r.top<bounds.top-1||r.right>bounds.right+1||r.bottom>bounds.bottom+1)issues.push({text:el.textContent.slice(0,70),reason:'outside stage'});if(el.clientHeight&&el.scrollHeight>el.clientHeight+2&&getComputedStyle(el).overflowY==='hidden')issues.push({text:el.textContent.slice(0,70),reason:'clipped'});}return issues;})()`);
   const styles=['editorial-magazine','botanical-line','academic-thesis','keynote-dark'];
-  const topics=[['ai-security',20],['cafe-brand',20],['lumina-pitch',20]];
+  const topics=extensionOnly?[['review-checklist',4]]:[['ai-security',20],['cafe-brand',20],['lumina-pitch',20]];
   await navigate('.verification/render.html');
   const layouts=await evaluate('window.SlideRenderer.COMPOUND_LAYOUTS.map(l=>l.id)');
   for(const style of uiOnly?[]:styles){
     for(const [topic,count] of topics)for(let page=0;page<count;page++){
-      await navigate(`.verification/render.html?style=${style}&topic=${topic}&page=${page}`);
+      await navigate(`.verification/render.html?style=${style}&${extensionOnly?'example':'topic'}=${topic}&page=${page}`);
       const issues=await geometry();results.pages.push({style,topic,page,issues});
       await screenshot(`${style}-${topic}-${page}.png`);
     }
-    for(const layout of layouts){
+    for(const layout of extensionOnly?[]:layouts){
       for(const empty of [false,true]){
         await navigate(`.verification/render.html?style=${style}&layout=${layout}${empty?'&empty=1':''}`);
         const issues=await geometry();results.pages.push({style,layout,empty,issues});
@@ -81,7 +82,7 @@ try{
   results.checks.push({name:'mobile no horizontal clipping',pass:await evaluate('document.documentElement.scrollWidth<=window.innerWidth+1')});
   await navigate('project.html');await screenshot('project-mobile.png');
   results.checks.push({name:'project mobile no horizontal clipping',pass:await evaluate('document.documentElement.scrollWidth<=window.innerWidth+1')});
-  fs.writeFileSync(path.join(out,uiOnly?'browser-ui-results.json':'browser-results.json'),JSON.stringify(results,null,2));
+  fs.writeFileSync(path.join(out,extensionOnly?'browser-extension-results.json':uiOnly?'browser-ui-results.json':'browser-results.json'),JSON.stringify(results,null,2));
   console.log(JSON.stringify({rendered:results.pages.length,geometryFailures:results.pages.filter(p=>p.issues.length),runtimeErrors:results.errors,checks:results.checks},null,2));
   if(results.errors.length||results.pages.some(p=>p.issues.length)||results.checks.some(c=>!c.pass))process.exitCode=1;
   await send('Browser.close');

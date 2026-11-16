@@ -71,3 +71,11 @@ node tools/check-content.cjs
 ## GitHub Pages
 
 網站由 Repository 根目錄發布。在 GitHub 的 Settings → Pages 選擇 Deploy from a branch → main → / (root)。所有站內連結使用相對路徑，適用 `/S/` 子路徑。`.nojekyll` 讓原始靜態檔案直接發布。
+
+## 規則如何實際延伸
+
+`AGENTS.md` 是給 AI 開發助手閱讀的規則；網站目前沒有串接線上 LLM。匯入器負責文字解析與套版，AI 指令按鈕只複製整理指令。已依規則另增 [四頁驗收清單](examples/review-checklist.json)，可與 [三頁格式範例](examples/rules-demo.json) 對照，證明不修改引擎也能新增內容。
+
+放映頁可下載包含樣式、圖片與播放程式的 HTML，保存編修結果後可獨立開啟；網頁字體和 PPTX 匯出函式庫仍可能需要網路。PDF 使用瀏覽器列印。沒有提供講者備忘時隱藏備忘按鈕；格式工具需先選取投影片元素才會啟用。
+
+操作稽核可依序執行 `node tools/browser-audit.mjs --ui-only`、`python tools/build-audit-fixtures.py`、`node tools/button-audit.mjs`。前一步產生可供重新匯入驗證的 PPTX，測試產物都存於不發布的 `.verification/`。
