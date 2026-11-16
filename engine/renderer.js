@@ -567,10 +567,12 @@ window.SlideRenderer = (() => {
   function layoutCoverCentered(c, tpl) {
     const n = c.pts.length;
     const footerText = c.presenter || c.summary.replace(/\*\*/g, "");
-    return `<div style="flex:1;padding:48px 64px 32px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;text-align:center;position:relative;z-index:4;min-height:0;">
-      <div style="margin-top:24px;display:flex;flex-direction:column;align-items:center;gap:16px;">
-        <h1 style="margin:0;font-family:${tpl.titleFont};font-size:52px;font-weight:800;line-height:1.2;color:${tpl.primary};max-width:19ch;">${escapeHtml(c.title)}</h1>
-        ${c.sub ? `<p style="margin:0;font-family:${tpl.titleFont};font-size:21px;color:${tpl.fg};max-width:48ch;line-height:1.5;">${escapeHtml(c.sub)}</p>` : ""}
+    const hasBottom = n > 0 || Boolean(footerText || c.dateLabel);
+    return `<div style="flex:1;padding:48px 64px 32px;display:flex;flex-direction:column;justify-content:${hasBottom ? "space-between" : "center"};align-items:center;text-align:center;position:relative;z-index:4;min-height:0;gap:24px;">
+      <div style="margin-top:${hasBottom ? "24px" : "0"};display:flex;flex-direction:column;align-items:center;gap:20px;">
+        <h1 style="margin:0;font-family:${tpl.titleFont};font-size:${hasBottom ? "52px" : "68px"};font-weight:800;line-height:1.18;color:${tpl.primary};max-width:18ch;letter-spacing:-0.01em;">${escapeHtml(c.title)}</h1>
+        ${!hasBottom ? `<div style="width:56px;height:3px;background:${tpl.primary};opacity:0.75;"></div>` : ""}
+        ${c.sub ? `<p style="margin:0;font-family:${tpl.titleFont};font-size:${hasBottom ? "21px" : "24px"};color:${tpl.fg};max-width:44ch;line-height:1.55;">${escapeHtml(c.sub)}</p>` : ""}
         ${c.author ? `<div style="margin-top:8px;font-size:17px;color:${tpl.muted};">${escapeHtml(c.author)}</div>` : ""}
       </div>
       ${n > 0 ? `<div style="width:100%;display:grid;grid-template-columns:repeat(${n},1fr);gap:16px;">
@@ -810,18 +812,19 @@ window.SlideRenderer = (() => {
   function layoutThreeColDefense(c, tpl) {
     const n = Math.max(1, c.pts.length);
     const hasRichBody = c.pts.some((pt) => pt.desc || pt.stat || pt.action);
+    const hasFooterOrStat = c.pts.some((pt) => pt.stat || pt.action);
     return `<div style="flex:1;padding:16px 48px 16px;display:flex;flex-direction:column;gap:16px;min-height:0;position:relative;z-index:4;">
       ${c.summary ? `<div style="border-left:4px solid ${tpl.primary};padding:4px 0 4px 16px;font-size:17px;color:${tpl.fg};line-height:1.5;flex-shrink:0;">${formatRich(c.summary, tpl.primary)}</div>` : ""}
-      <div style="flex:1;display:grid;grid-template-columns:repeat(${n},1fr);gap:24px;min-height:0;${hasRichBody ? "" : "align-content:center;"}">
+      <div style="flex:1;display:grid;grid-template-columns:repeat(${n},1fr);gap:24px;min-height:0;${hasFooterOrStat ? "" : "align-content:center;"}">
         ${c.pts.map((pt, i) => {
           const isFocal = i === 0;
-          return `<div style="${cardChromeCss(tpl, "card")}padding:24px;display:flex;flex-direction:column;justify-content:${hasRichBody ? "space-between" : "flex-start"};gap:16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;${hasRichBody ? `padding-bottom:16px;border-bottom:1px solid ${tpl.border};` : ""}">
+          return `<div style="${cardChromeCss(tpl, "card")}padding:${hasFooterOrStat ? "24px" : "28px 24px"};display:flex;flex-direction:column;justify-content:${hasFooterOrStat ? "space-between" : "flex-start"};gap:16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;${hasRichBody ? `padding-bottom:14px;border-bottom:1px solid ${tpl.border};` : ""}">
               <div style="display:flex;align-items:center;gap:12px;">${badgeHtml(pt.num, tpl, isFocal, 32)}<strong style="font-size:21px;font-weight:700;color:${isFocal ? tpl.primary : tpl.fg};">${escapeHtml(pt.title)}</strong></div>
               ${pt.statLabel ? `<span style="font-family:${tpl.monoFont};font-size:13px;font-weight:600;color:${tpl.muted};">${escapeHtml(pt.statLabel)}</span>` : ""}
             </div>
             ${pt.stat ? `<div style="font-family:${tpl.titleFont};font-size:32px;font-weight:800;color:${isFocal ? tpl.primary : tpl.fg};line-height:1.15;">${escapeHtml(pt.stat)}</div>` : ""}
-            ${pt.desc ? `<p style="margin:0;font-size:17px;line-height:1.6;color:${tpl.fg};flex:1;display:flex;align-items:center;">${formatRich(pt.desc, tpl.primary)}</p>` : ""}
+            ${pt.desc ? `<p style="margin:0;font-size:17px;line-height:1.65;color:${tpl.fg};${hasFooterOrStat ? "flex:1;display:flex;align-items:center;" : ""}">${formatRich(pt.desc, tpl.primary)}</p>` : ""}
             ${pt.action ? `<div style="border-top:1px solid ${tpl.border}66;padding-top:12px;">
               <div style="font-size:13px;font-weight:700;color:${isFocal ? tpl.primary : tpl.muted};margin-bottom:4px;">▸ 重點結論</div>
               <div style="font-size:13px;line-height:1.5;color:${tpl.muted};">${escapeHtml(pt.action)}</div>
@@ -1557,10 +1560,13 @@ window.SlideRenderer = (() => {
     const summary = c.summary ? `<div data-el="summary" style="margin-top:24px;max-width:880px;">${p(c.summary)}</div>` : "";
     const wrap = (body) => `<div style="flex:1;min-height:0;padding:24px 64px 40px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:4;">${c.hs?.value ? `<div data-el="highlight-stat" style="margin-bottom:24px;">${point({title:c.hs.label,stat:c.hs.value,desc:c.hs.desc},0)}</div>` : ""}${body}${summary}</div>`;
     if (mode === "cover-centered" || mode === "cover-split-photo") {
-      const cover = `<div style="max-width:960px;display:flex;flex-direction:column;gap:24px;">
+      const heroOnly = !c.pts.length && !c.image;
+      const cover = `<div style="max-width:960px;display:flex;flex-direction:column;gap:${heroOnly ? "20px" : "24px"};">
         ${c.kicker ? `<div data-el="kicker" style="font-size:13px;color:${tpl.muted};">${text(c.kicker)}</div>` : ""}
-        <h1 data-el="title" style="font-family:${tpl.titleFont};font-size:52px;line-height:1.25;color:${tpl.primary};margin:0;overflow-wrap:anywhere;">${text(c.title)}</h1>
-        ${p(c.sub)}${c.pts.length ? `<div style="margin-top:24px;display:grid;grid-template-columns:repeat(${Math.min(c.pts.length, 2)},1fr);gap:24px;">${c.pts.map((pt,i)=>point(pt,i+1)).join("")}</div>` : ""}${summary}</div>`;
+        <h1 data-el="title" style="font-family:${tpl.titleFont};font-size:${heroOnly ? "68px" : "52px"};line-height:1.18;color:${tpl.primary};margin:0;overflow-wrap:anywhere;">${text(c.title)}</h1>
+        ${heroOnly ? `<div style="width:56px;height:3px;background:${tpl.primary};opacity:0.78;"></div>` : ""}
+        ${c.sub ? `<p data-el="body" style="margin:0;font-size:${heroOnly ? "22px" : "17px"};line-height:1.65;color:${heroOnly ? tpl.fg : tpl.muted};overflow-wrap:anywhere;">${text(c.sub)}</p>` : ""}
+        ${c.pts.length ? `<div style="margin-top:24px;display:grid;grid-template-columns:repeat(${Math.min(c.pts.length, 2)},1fr);gap:24px;">${c.pts.map((pt,i)=>point(pt,i+1)).join("")}</div>` : ""}${summary}</div>`;
       if (mode === "cover-split-photo" && c.image) return `<div style="flex:1;padding:64px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;position:relative;z-index:4;">${cover}<img data-el="image" src="${text(c.image)}" alt="${text(c.title)}" style="width:100%;height:480px;object-fit:cover;"></div>`;
       return `<div style="flex:1;padding:80px 96px;display:flex;align-items:center;justify-content:center;position:relative;z-index:4;">${cover}</div>`;
     }
@@ -1608,7 +1614,7 @@ window.SlideRenderer = (() => {
       const mid=Math.ceil(n/2),groups=[c.pts.slice(0,mid),c.pts.slice(mid)].filter(g=>g.length);
       return wrap(`<div style="display:grid;grid-template-columns:repeat(${groups.length},1fr);gap:48px;">${groups.map((group,col)=>`<div style="${mode==="dual-nested-stat"?`background:${tpl.surface};border:1px solid ${tpl.border};padding:32px;`:`border-top:2px solid ${col===0?tpl.primary:tpl.border};padding-top:32px;`}min-height:264px;display:flex;flex-direction:column;justify-content:center;gap:32px;">${group.map((pt,j)=>`<div data-el="adaptive-point-${col*mid+j}" style="display:flex;flex-direction:column;gap:24px;">${title(pt,col*mid+j)}${desc(pt)}</div>`).join("")}</div>`).join("")}</div>`);
     }
-    return wrap(`<div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:32px;">${c.pts.map((pt,i)=>`<div data-el="adaptive-point-${i}" style="min-height:${mode==="four-col-nested"?280:304}px;${cardChromeCss(tpl,"card")}border-top-color:${i===0?tpl.primary:tpl.border};${mode==="four-col-nested"?"text-align:center;":""}padding:32px 24px;display:flex;flex-direction:column;justify-content:center;gap:32px;">${title(pt,i)}${desc(pt)}</div>`).join("")}</div>`);
+    return wrap(`<div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:32px;">${c.pts.map((pt,i)=>`<div data-el="adaptive-point-${i}" style="min-height:${mode==="four-col-nested"?190:200}px;${cardChromeCss(tpl,"card")}border-top-color:${i===0?tpl.primary:tpl.border};${mode==="four-col-nested"?"text-align:center;":""}padding:28px 24px;display:flex;flex-direction:column;justify-content:flex-start;gap:16px;">${title(pt,i)}${desc(pt)}</div>`).join("")}</div>`);
   }
 
   function renderSlideInner(recipeOrId, data) {

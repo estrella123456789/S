@@ -549,7 +549,7 @@
 
       <section class="ctrl-block" style="flex:1;">
         <div class="ctrl-head">
-          <span>3. 切換本頁版面（30 種）</span>
+          <span>3. 切換本頁版面</span>
           <button type="button" class="btn" id="resetPageBtn" style="padding:2px 8px;font-size:10.5px;visibility:hidden;">還原版面</button>
         </div>
         <div class="layout-grid" id="layoutSwitcher"></div>
@@ -1052,7 +1052,8 @@
           `;
         }).join("");
 
-        const coreLayouts = SR.COMPOUND_LAYOUTS;
+        const coreLayouts = SR.CORE_LAYOUTS.slice();
+        if (layoutObj && !coreLayouts.some((l) => l.id === layoutObj.id)) coreLayouts.push(layoutObj);
         layoutSwitcher.innerHTML = coreLayouts.map((l) => `
           <button type="button" class="layout-btn ${l.id === cur.mode ? "is-active" : ""}" data-layout="${l.id}" title="${l.desc}">
             <span class="layout-title">${l.label}</span>
