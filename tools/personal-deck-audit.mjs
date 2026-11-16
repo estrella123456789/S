@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawn} from 'node:child_process';
 const root=process.cwd(),out=path.join(root,'.verification');
-fs.mkdirSync(path.join(out,'downloads'),{recursive:true});
+const downloads=path.join(out,'personal-downloads',String(Date.now()));
+fs.mkdirSync(downloads,{recursive:true});
 fs.copyFileSync(path.join(root,'tools/render-fixture.html'),path.join(out,'render.html'));
 const delay=ms=>new Promise(r=>setTimeout(r,ms));
 const server=spawn('python',['-m','http.server','8773','--bind','127.0.0.1'],{cwd:root,windowsHide:true,stdio:'ignore'});
@@ -23,13 +24,13 @@ try{
   const send=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}));});
   const evaluate=async(expression)=>{const r=await send('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.exception?.description||r.exceptionDetails.text);return r.result.value;};
   await send('Page.enable');await send('Runtime.enable');
-  await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:path.join(out,'downloads')});
+  await send('Browser.setDownloadBehavior',{behavior:'allow',downloadPath:downloads});
   await send('Emulation.setDeviceMetricsOverride',{width:1280,height:720,deviceScaleFactor:1,mobile:false});
   const navigate=async(url)=>{await send('Page.navigate',{url:`http://127.0.0.1:8773/${url}`});await delay(120);for(let i=0;i<400;i++){const ready=await evaluate(url.includes('render.html')?'document.readyState === "complete" && document.body.dataset.ready === "true"':url.startsWith('index.html')?'!!document.querySelector("#editContentBtn") && !!document.querySelector("#stageFrame>div")':'document.readyState === "complete"');if(ready)break;await delay(100);} };
   const screenshot=async(name)=>{const shot=await send('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});fs.writeFileSync(path.join(out,name),Buffer.from(shot.data,'base64'));};
   const geometry=()=>evaluate(`(()=>{const stage=document.querySelector('#slide>div');const bounds=stage.getBoundingClientRect();const issues=[];for(const el of stage.querySelectorAll('*')){if(!el.childNodes.length||!Array.from(el.childNodes).some(n=>n.nodeType===3&&n.textContent.trim()))continue;const r=el.getBoundingClientRect();if(r.left<bounds.left-1||r.top<bounds.top-1||r.right>bounds.right+1||r.bottom>bounds.bottom+1)issues.push({text:el.textContent.slice(0,70),reason:'outside stage'});if(el.clientHeight&&el.scrollHeight>el.clientHeight+2&&getComputedStyle(el).overflowY==='hidden')issues.push({text:el.textContent.slice(0,70),reason:'clipped'});}return issues;})()`);
   const check=(name,pass)=>{results.checks.push({name,pass});if(!pass)console.log('FAIL',name);};
-  for(const style of ['editorial-magazine','botanical-line','academic-thesis','keynote-dark']){
+  for(const style of process.argv.includes('--layout-only')?[]:['editorial-magazine','botanical-line','academic-thesis','keynote-dark']){
     for(let page=0;page<20;page++){
       await navigate(`.verification/render.html?style=${style}&topic=ziwei-reading&page=${page}`);
       if(!await evaluate("!!document.querySelector('#slide>div')")){console.log(await evaluate("JSON.stringify({url:location.href,html:document.documentElement.outerHTML.slice(0,2500)})"));throw Error("Render fixture did not load");}
@@ -77,11 +78,11 @@ try{
   await navigate(player);
   check('20-page player receives edited content',await evaluate(`document.querySelectorAll('.slide').length===20&&document.querySelector('.deck').textContent.includes('直接編輯也要保留')`));
   await evaluate(`(async()=>{await SlidePptxExporter.exportDeck({slideElements:[...document.querySelectorAll('.slide')],deckTitle:'ziwei-personal-validation'});return true;})()`);
-  for(let i=0;i<80;i++){if(fs.readdirSync(path.join(out,'downloads')).some(n=>n.startsWith('ziwei-personal-validation')&&n.endsWith('.pptx')))break;await delay(200);}
-  check('personal PDF deck native PPTX generated',fs.readdirSync(path.join(out,'downloads')).some(n=>n.startsWith('ziwei-personal-validation')&&n.endsWith('.pptx')));
+  for(let i=0;i<80;i++){if(fs.readdirSync(downloads).some(n=>n.startsWith('ziwei-personal-validation')&&n.endsWith('.pptx')))break;await delay(200);}
+  check('personal PDF deck native PPTX generated',fs.readdirSync(downloads).some(n=>n.startsWith('ziwei-personal-validation')&&n.endsWith('.pptx')));
   await evaluate(`(async()=>{await SlidePptxExporter.exportDeck({topicId:'ziwei-reading',recipe:{templateId:'academic-thesis'},pageOverrides:{},customHtmlByPage:{},assetBase:'../assets/',deckTitle:'ziwei-reading-20'});return true;})()`);
-  for(let i=0;i<80;i++){if(fs.readdirSync(path.join(out,'downloads')).some(n=>n==='ziwei-reading-20.pptx'))break;await delay(200);}
-  const artifact=path.join(out,'downloads','ziwei-reading-20.pptx');
+  for(let i=0;i<80;i++){if(fs.readdirSync(downloads).some(n=>n==='ziwei-reading-20.pptx'))break;await delay(200);}
+  const artifact=path.join(downloads,'ziwei-reading-20.pptx');
   check('clean original book PPTX generated',fs.existsSync(artifact));
   if(fs.existsSync(artifact)){fs.mkdirSync(path.join(root,'exports'),{recursive:true});fs.copyFileSync(artifact,path.join(root,'exports','ziwei-reading.pptx'));}
   await screenshot('ziwei-player.png');
@@ -90,9 +91,22 @@ try{
   check('mobile page fits viewport',await evaluate('document.documentElement.scrollWidth<=innerWidth+1'));
   await evaluate(`document.querySelector('#editContentBtn').click();true`);await screenshot('ziwei-content-editor-mobile.png');
   check('mobile content editor fits viewport',await evaluate(`document.querySelector('#contentDialog').getBoundingClientRect().width<=innerWidth`));
-  fs.writeFileSync(path.join(out,'personal-deck-results.json'),JSON.stringify(results,null,2));
+  await evaluate(`document.querySelector('#contentDialog').close();document.querySelector('#pageSelect').value='10';document.querySelector('#pageSelect').dispatchEvent(new Event('change'));document.querySelector('[data-layout="three-col-defense"]').click();true`);
+  for(const [width,height] of [[1440,1000],[1024,768],[768,1024],[390,844],[320,740]]){
+    await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:width<500});await delay(150);
+    check(`stage proportional and contained ${width}x${height}`,await evaluate(`(()=>{const r=document.querySelector('#stageFrame').getBoundingClientRect(),v=document.querySelector('#stageViewport').getBoundingClientRect();return Math.abs(r.width/r.height-16/9)<0.01&&r.left>=v.left-1&&r.right<=v.right+1&&r.top>=v.top-1&&r.bottom<=v.bottom+1;})()`));
+    await screenshot(`adaptive-studio-${width}.png`);
+  }
+  await send('Emulation.setDeviceMetricsOverride',{width:1280,height:720,deviceScaleFactor:1,mobile:false});
+  await navigate('.verification/render.html?topic=ziwei-reading&page=10');
+  for(const mode of ['three-col-defense','grid-2x2-headers','four-col-nested','banner-3-rows','before-after-compare','dual-nested-stat','horizontal-timeline']){
+    await evaluate(`document.querySelector('#slide').innerHTML=SlideRenderer.renderSlideInner('editorial-magazine',{...SlideRenderer.getDeckPlan('editorial-magazine',{},'ziwei-reading')[10],mode:'${mode}'});true`);
+    check(`${mode} short prose uses a centered reading area`,await evaluate(`(()=>{const body=document.querySelector('[data-adaptive-layout]'),pts=[...document.querySelectorAll('[data-el^="adaptive-point-"]')];return !!body&&pts.length===3&&Math.min(...pts.map(p=>p.getBoundingClientRect().top))>=150&&Math.max(...pts.map(p=>p.getBoundingClientRect().bottom))<=620;})()`));
+    await screenshot(`adaptive-page10-${mode}.png`);
+  }
+  fs.writeFileSync(path.join(out,process.argv.includes('--layout-only')?'adaptive-layout-results.json':'personal-deck-results.json'),JSON.stringify(results,null,2));
   console.log(JSON.stringify({rendered:results.pages.length,geometryFailures:results.pages.filter(p=>p.issues.length),runtimeErrors:results.errors,failedChecks:results.checks.filter(c=>!c.pass),passed:results.checks.filter(c=>c.pass).length},null,2));
   if(results.errors.length||results.pages.some(p=>p.issues.length)||results.checks.some(c=>!c.pass))process.exitCode=1;
   await send('Browser.close');
-}catch(e){try{console.error(await evaluate('JSON.stringify({url:location.href,html:document.documentElement.outerHTML.slice(0,3000)})'));}catch{}console.error(e);process.exitCode=1;fs.writeFileSync(path.join(out,'personal-deck-results.json'),JSON.stringify({...results,fatal:e.message},null,2));}
+}catch(e){try{console.error(await evaluate('JSON.stringify({url:location.href,html:document.documentElement.outerHTML.slice(0,3000)})'));}catch{}console.error(e);process.exitCode=1;fs.writeFileSync(path.join(out,process.argv.includes('--layout-only')?'adaptive-layout-results.json':'personal-deck-results.json'),JSON.stringify({...results,fatal:e.message},null,2));}
 finally{ws?.close();server.kill();browser.kill();}

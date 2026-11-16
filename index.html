@@ -6,7 +6,7 @@
   <title>Slide Atelier — 互動式簡報設計工作室</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <style>
     :root {
       --bg: #f3efe7;
@@ -213,7 +213,9 @@
     }
 
     .stage-bar {
-      height: 34px;
+      min-height: 34px;
+      height: auto;
+      flex-wrap: wrap;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -221,7 +223,14 @@
       gap: 10px;
     }
 
-    .nav-group { display: flex; align-items: center; gap: 6px; }
+    .nav-group { display: flex; align-items: center; gap: 6px; min-width:0; flex:1; }
+    .nav-group .btn { flex-shrink:0; white-space:nowrap; }
+    .nav-group .page-select { flex:1; min-width:80px; width:0; }
+    @media(max-width:1200px){
+      .stage-bar > .nav-group{flex:0 0 100%;width:100%}
+      .stage-bar > div:not(.nav-group){width:100%;min-width:0;justify-content:space-between}
+      .mode-badge{min-width:0;max-width:72%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    }
 
     .page-select {
       appearance: none;
@@ -491,16 +500,16 @@
     }
   </style>
   <style>
-    @media(max-width:760px){
+    @media(max-width:960px){
       html,body{height:auto;min-height:100vh;overflow:auto;display:block}
       .topbar{height:auto;min-height:50px;padding:12px;flex-wrap:wrap;align-items:flex-start}
       .brand{width:100%}.top-actions{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
       .top-actions .btn{white-space:normal;text-align:center;line-height:1.5;padding:8px}
       .workspace{display:flex;flex-direction:column;height:auto;overflow:visible}
-      .sidebar{width:100%;max-height:320px;overflow:auto;border-right:0;border-bottom:1px solid var(--border)}
-      .stage-area{width:100%;min-width:0;overflow:visible;padding:12px}
-      .stage-bar,.nav-group,.editor-row{flex-wrap:wrap;min-width:0}.page-select{max-width:180px}
-      .stage-viewport{height:260px;min-height:260px}.editor-ribbon{overflow:visible}
+      .sidebar{order:1;width:100%;max-height:360px;overflow:auto;border-right:0;border-bottom:1px solid var(--border)}
+      .stage-area{order:0;width:100%;min-width:0;overflow:visible;padding:12px}
+      .stage-bar,.editor-row{flex-wrap:wrap;min-width:0}.nav-group{flex-wrap:nowrap;width:100%}.page-select{max-width:none}.stage-bar{order:0}.editor-ribbon{order:2}
+      .stage-viewport{order:1;flex:none;height:clamp(220px,50vw,460px);min-height:220px}.editor-ribbon{overflow:visible}
     }
   </style>
 <style>@media(max-width:760px){.import-modal-backdrop{padding:12px}.import-modal{width:100%;min-width:0}.import-modal [style*="display:flex"]{flex-wrap:wrap;gap:8px}.import-modal .btn,.import-modal .ed-btn{white-space:normal}}</style>
@@ -686,9 +695,9 @@
   </div>
 
   <script src="engine/template-svgs.js"></script>
-  <script src="engine/content-state.js?v=personal-pdf"></script>
-  <script src="engine/renderer.js?v=personal-pdf"></script>
-  <script src="engine/ziwei-deck.js?v=personal-pdf"></script>
+  <script src="engine/content-state.js?v=adaptive-prose-1"></script>
+  <script src="engine/renderer.js?v=adaptive-prose-1"></script>
+  <script src="engine/ziwei-deck.js?v=adaptive-prose-1"></script>
   <script src="engine/pptx-exporter.js"></script>
   <script src="engine/importer.js?v=controls-audit"></script>
   <script>
@@ -822,8 +831,8 @@
       }
 
       function fitStage() {
-        const vw = Math.max(320, stageViewport.clientWidth - 16);
-        const vh = Math.max(200, stageViewport.clientHeight - 16);
+        const vw = Math.max(1, stageViewport.clientWidth - 16);
+        const vh = Math.max(1, stageViewport.clientHeight - 16);
         currentScale = Math.min(vw / 1280, vh / 720, 1.35);
         stageFrame.style.transform = `scale(${currentScale})`;
       }
@@ -947,6 +956,12 @@
         const cur = plan[state.page];
         const key = pageKey();
 
+        const cached=state.customHtmlByPage[key];
+        if (state.topic==="ziwei-reading" && cached && !cached.includes('data-design-revision="adaptive-prose-1"')) {
+          // Keep the old composition available locally; canonical text and extras remain authoritative.
+          try {const backup=JSON.parse(localStorage.getItem("slide_atelier_layout_backup")||"{}");backup[key]=cached;localStorage.setItem("slide_atelier_layout_backup",JSON.stringify(backup));}catch{}
+          delete state.customHtmlByPage[key];
+        }
         stageFrame.innerHTML = state.customHtmlByPage[key] || SR.renderSlideInner(recipe, cur);
         contentApi.bind(stageFrame, cur);
         elResetCustom.style.visibility = state.customHtmlByPage[key] ? "visible" : "hidden";

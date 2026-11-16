@@ -1588,6 +1588,29 @@ window.SlideRenderer = (() => {
   }
 
 
+  // Short prose needs a composed reading area, not stretched dashboard cards.
+  function renderCompactProse(mode, c, tpl) {
+    const supported = ["three-col-defense","grid-2x2-headers","four-col-nested","banner-3-rows","horizontal-timeline","before-after-compare","dual-nested-stat"];
+    if (!supported.includes(mode) || c.hs || c.dualGroups || c.matrixTable || !c.pts.length || c.pts.length > 4) return null;
+    if (c.pts.some(p=>p.stat || p.action || (p.title+p.desc).length > 100) || c.pts.reduce((n,p)=>n+p.title.length+p.desc.length,0)>240) return null;
+    const n=c.pts.length;
+    const title=(pt,i)=>`<h3 data-el="point-title-${i}" style="font-family:${tpl.titleFont};font-size:22px;font-weight:700;line-height:1.45;margin:0;color:${i===0?tpl.primary:tpl.fg};">${escapeHtml(pt.title)}</h3>`;
+    const desc=pt=>pt.desc?`<p data-el="body" style="font-size:17px;line-height:1.8;margin:0;color:${tpl.fg};overflow-wrap:anywhere;">${formatRich(pt.desc,tpl.fg)}</p>`:"";
+    const summary=c.summary?`<p style="font-size:17px;line-height:1.7;margin:24px 0 0;color:${tpl.muted};">${formatRich(c.summary,tpl.fg)}</p>`:"";
+    const wrap=body=>`<div data-el="adaptive-body" data-adaptive-layout="${mode}" style="flex:1;min-height:0;padding:32px 64px 48px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:4;">${body}${summary}</div>`;
+    if(mode==="banner-3-rows")return wrap(`<div style="display:flex;flex-direction:column;gap:0;">${c.pts.map((pt,i)=>`<div data-el="adaptive-point-${i}" style="display:grid;grid-template-columns:280px 1fr;align-items:center;gap:40px;padding:24px 0;min-height:96px;border-top:1px solid ${i===0?tpl.primary:tpl.border};">${title(pt,i)}${desc(pt)}</div>`).join("")}</div>`);
+    if(mode==="horizontal-timeline")return wrap(`<div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:32px;">${c.pts.map((pt,i)=>`<div data-el="adaptive-point-${i}" style="position:relative;min-height:232px;padding-top:40px;border-top:2px solid ${i===0?tpl.primary:tpl.border};display:flex;flex-direction:column;gap:24px;"><span aria-hidden="true" style="position:absolute;left:0;top:-7px;width:12px;height:12px;border-radius:50%;background:${i===0?tpl.primary:tpl.border};"></span>${title(pt,i)}${desc(pt)}</div>`).join("")}</div>`);
+    if(mode==="grid-2x2-headers"){
+      const cols=n===4?2:n;
+      return wrap(`<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:24px;">${c.pts.map((pt,i)=>`<div data-el="adaptive-point-${i}" style="min-height:${n===4?168:256}px;background:${tpl.surface};border:1px solid ${tpl.border};display:flex;flex-direction:column;"><h3 style="font-family:${tpl.titleFont};font-size:22px;line-height:1.4;margin:0;padding:16px 24px;background:${i===0?tpl.primary:tpl.tint};color:${i===0?contrastFg(tpl.primary):tpl.fg};">${escapeHtml(pt.title)}</h3><div style="padding:24px;">${desc(pt)}</div></div>`).join("")}</div>`);
+    }
+    if(mode==="before-after-compare" || mode==="dual-nested-stat"){
+      const mid=Math.ceil(n/2),groups=[c.pts.slice(0,mid),c.pts.slice(mid)].filter(g=>g.length);
+      return wrap(`<div style="display:grid;grid-template-columns:repeat(${groups.length},1fr);gap:48px;">${groups.map((group,col)=>`<div style="${mode==="dual-nested-stat"?`background:${tpl.surface};border:1px solid ${tpl.border};padding:32px;`:`border-top:2px solid ${col===0?tpl.primary:tpl.border};padding-top:32px;`}min-height:264px;display:flex;flex-direction:column;justify-content:center;gap:32px;">${group.map((pt,j)=>`<div data-el="adaptive-point-${col*mid+j}" style="display:flex;flex-direction:column;gap:24px;">${title(pt,col*mid+j)}${desc(pt)}</div>`).join("")}</div>`).join("")}</div>`);
+    }
+    return wrap(`<div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:32px;">${c.pts.map((pt,i)=>`<div data-el="adaptive-point-${i}" style="min-height:${mode==="four-col-nested"?280:304}px;${mode==="four-col-nested"?`background:${tpl.surface};border:1px solid ${tpl.border};text-align:center;`:`border-top:2px solid ${i===0?tpl.primary:tpl.border};`}padding:32px 24px;display:flex;flex-direction:column;justify-content:center;gap:32px;">${title(pt,i)}${desc(pt)}</div>`).join("")}</div>`);
+  }
+
   function renderSlideInner(recipeOrId, data) {
     const tpl = getTemplate(recipeOrId);
     const c = getCanon(data);
@@ -1601,7 +1624,8 @@ window.SlideRenderer = (() => {
     const suppliedPoints = Array.isArray(data.points) ? data.points : [];
     const sparse = !suppliedPoints.length && !data.dualGroups && !data.matrixTable && !data.modelNodes && !data.scaleNodes;
     const needsHonestBars = mode === "bars-insight-split" && (!suppliedPoints.some(p => p.stat) || suppliedPoints.some(p => /^0(?:\.\d+)?%$/.test(String(p.stat))));
-    const renderFn = ((sparse && !["cover-editorial-bleed", "cover-framed-grid"].includes(mode)) || needsHonestBars)
+    const compact = renderCompactProse(mode, c, tpl);
+    const renderFn = compact !== null ? (()=>compact) : ((sparse && !["cover-editorial-bleed", "cover-framed-grid"].includes(mode)) || needsHonestBars)
       ? ((content, skin) => renderCoreContent(mode, content, skin))
       : (RENDER_BY_MODE[mode] || layoutBanner3Rows);
     const coverPageNumBadge = (isCoverMode && idx > 0)
@@ -1612,7 +1636,7 @@ window.SlideRenderer = (() => {
       ? `${renderFn(c, tpl)}${coverPageNumBadge}`
       : `${renderHeader(c, tpl)}${renderFn(c, tpl)}${renderFooter(data, tpl, idx, total, data.chapters)}`;
 
-    return `<div style="position:relative;width:1280px;height:720px;box-sizing:border-box;background:${tpl.bg};color:${tpl.fg};font-family:${tpl.bodyFont};display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">
+    return `<div data-design-revision="adaptive-prose-1" style="position:relative;width:1280px;height:720px;box-sizing:border-box;background:${tpl.bg};color:${tpl.fg};font-family:${tpl.bodyFont};display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;">
       ${buildTemplateBackdropSvg(tpl, idx)}
       ${topStrip}
       ${mainContent}

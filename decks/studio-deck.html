@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Slide Atelier｜簡報放映</title>
   <link rel="stylesheet" href="../engine/stage.css">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <style>
     #studioQuickPill{position:fixed;right:16px;top:16px;z-index:1000;font:14px system-ui,sans-serif}#studioPillToggle{padding:10px 16px;background:#fffdf9;color:#1d2626;border:1px solid #d7cebc;border-radius:8px;cursor:pointer}#studioQuickPanel{display:none;max-width:min(420px,90vw);max-height:75vh;overflow:auto;background:#fffdf9;color:#1d2626;padding:24px;border:1px solid #d7cebc;border-radius:8px;margin-top:8px}#studioQuickPanel.is-open{display:block}.sq-label{font-weight:700;margin:16px 0 8px}.sq-grid{display:flex;gap:8px;flex-wrap:wrap}.sq-chip{padding:8px;border:1px solid #d7cebc;background:#fff;color:#1d2626;cursor:pointer;border-radius:4px}.sq-chip.is-active{background:#0d4f4f;color:#fff}.sq-help{font-size:13px;line-height:1.6;color:#5d6a6a}@media print{#studioQuickPill{display:none}}
   </style>
@@ -13,9 +13,9 @@
   <div id="studioQuickPill"><button type="button" id="studioPillToggle" aria-expanded="false">簡報設定</button><div id="studioQuickPanel"><div class="sq-label">主題</div><div id="sqTopics" class="sq-grid"></div><div class="sq-label">整份簡報風格</div><div id="sqPresets" class="sq-grid"></div><div class="sq-label">本頁版面</div><div id="sqLayouts" class="sq-grid"></div><p class="sq-help">每套風格包含固定的色彩與字體。變更風格或版面會重新套用設計，內容文字與新增物件會保留。</p></div></div>
   <main class="deck" id="studioDeck"></main>
   <script src="../engine/template-svgs.js"></script>
-  <script src="../engine/content-state.js?v=personal-pdf"></script>
-  <script src="../engine/renderer.js?v=personal-pdf"></script>
-  <script src="../engine/ziwei-deck.js?v=personal-pdf"></script>
+  <script src="../engine/content-state.js?v=adaptive-prose-1"></script>
+  <script src="../engine/renderer.js?v=adaptive-prose-1"></script>
+  <script src="../engine/ziwei-deck.js?v=adaptive-prose-1"></script>
   <script src="../engine/pptx-exporter.js"></script>
   <script src="../engine/importer.js?v=controls-audit"></script>
   <script>
@@ -47,7 +47,8 @@
       deck.dataset.deckTitle=`${top.shortLabel} · ${tpl.name}（${plan.length}頁）`;
       plan.forEach((data,i)=>{
         const slide=document.createElement("section"); slide.className="slide";
-        slide.innerHTML=state.customHtmlByPage[`${state.topic}_${i}`] || SR.renderSlideInner(recipe,data);
+        const cached=state.customHtmlByPage[`${state.topic}_${i}`];
+        slide.innerHTML=(state.topic!=="ziwei-reading" || cached?.includes('data-design-revision="adaptive-prose-1"')?cached:null) || SR.renderSlideInner(recipe,data);
         window.SlideContent.bind(slide,data);
         const notes=document.createElement("aside");notes.className="notes";notes.textContent=data.notes || "";slide.append(notes);deck.append(slide);
       });
