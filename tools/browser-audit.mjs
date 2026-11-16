@@ -51,7 +51,7 @@ try{
   await navigate('index.html');
   await evaluate('localStorage.clear();location.reload();true');await delay(500);
   await screenshot('studio-fixed.png');
-  results.checks.push({name:'original examples and 30 layouts in studio',pass:await evaluate('document.querySelectorAll("#topicBar [data-topic]").length===3 && document.querySelectorAll("#layoutSwitcher [data-layout]").length===30 && document.querySelector("#pageSelect").options.length===20')});
+  results.checks.push({name:'original examples and 30 layouts in studio',pass:await evaluate('["ai-security","cafe-brand","lumina-pitch"].every(id=>document.querySelector(`[data-topic="${id}"]`)) && document.querySelectorAll("#layoutSwitcher [data-layout]").length===30 && document.querySelector("#pageSelect").options.length===20')});
   const example=fs.readFileSync('examples/rules-demo.json','utf8');
   await evaluate(`document.querySelector('#openImportModalBtn').click();document.querySelector('#importTextInput').value=${JSON.stringify(example)};document.querySelector('#runImportBtn').click();true`);
   results.checks.push({name:'JSON import in UI',pass:await evaluate('document.querySelector("#pageSelect").options.length===3 && !document.querySelector("#importModal").classList.contains("is-open")')});

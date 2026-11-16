@@ -1461,6 +1461,13 @@ window.SlideRenderer = (() => {
   }
 
   function layoutBeforeAfterCompare(c, tpl) {
+    // With no sourced action or statistic, show a true comparison instead of repeating descriptions.
+    if (!c.pts.some(pt=>pt.action || pt.stat)) {
+      const mid=Math.ceil(c.pts.length/2);
+      return `<div style="flex:1;padding:32px 48px;display:grid;grid-template-columns:1fr 1fr;gap:48px;min-height:0;position:relative;z-index:4;">
+        ${[c.pts.slice(0,mid),c.pts.slice(mid)].map((group,col)=>`<div style="border-top:2px solid ${col===0?tpl.primary:tpl.border};padding-top:24px;display:flex;flex-direction:column;gap:40px;">${group.map(pt=>`<div><h3 style="font-family:${tpl.titleFont};font-size:22px;font-weight:700;color:${col===0?tpl.primary:tpl.fg};margin:0 0 24px;">${escapeHtml(pt.title)}</h3>${pt.desc?`<p style="font-size:17px;line-height:1.6;color:${tpl.fg};margin:0;">${formatRich(pt.desc,tpl.primary)}</p>`:""}</div>`).join("")}</div>`).join("")}
+      </div>`;
+    }
     return `<div style="flex:1;padding:16px 48px 16px;display:grid;grid-template-columns:1fr 1fr;gap:24px;min-height:0;position:relative;z-index:4;">
       <div style="${cardChromeCss(tpl, "card")}padding:24px;display:flex;flex-direction:column;gap:16px;">
         <div style="font-size:21px;font-weight:700;color:${tpl.fg};padding-bottom:12px;border-bottom:2px solid ${tpl.border};">現況與重點脈絡</div>
@@ -1594,7 +1601,7 @@ window.SlideRenderer = (() => {
     const suppliedPoints = Array.isArray(data.points) ? data.points : [];
     const sparse = !suppliedPoints.length && !data.dualGroups && !data.matrixTable && !data.modelNodes && !data.scaleNodes;
     const needsHonestBars = mode === "bars-insight-split" && (!suppliedPoints.some(p => p.stat) || suppliedPoints.some(p => /^0(?:\.\d+)?%$/.test(String(p.stat))));
-    const renderFn = (sparse || needsHonestBars)
+    const renderFn = ((sparse && !["cover-editorial-bleed", "cover-framed-grid"].includes(mode)) || needsHonestBars)
       ? ((content, skin) => renderCoreContent(mode, content, skin))
       : (RENDER_BY_MODE[mode] || layoutBanner3Rows);
     const coverPageNumBadge = (isCoverMode && idx > 0)
@@ -1609,6 +1616,7 @@ window.SlideRenderer = (() => {
       ${buildTemplateBackdropSvg(tpl, idx)}
       ${topStrip}
       ${mainContent}
+      ${globalThis.SlideContent ? globalThis.SlideContent.renderExtras(data.annotations) : ""}
     </div>`;
   }
 
@@ -2633,6 +2641,7 @@ window.SlideRenderer = (() => {
       const overrideMode = typeof ov === "string" ? ov : (ov && ov.mode);
       return {
         ...item,
+        ...(ov && typeof ov === "object" && ov.content ? ov.content : {}),
         num: String(idx + 1).padStart(2, "0"),
         total: list.length,
         chapters,

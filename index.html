@@ -686,7 +686,9 @@
   </div>
 
   <script src="engine/template-svgs.js"></script>
-  <script src="engine/renderer.js?v=controls-audit"></script>
+  <script src="engine/content-state.js?v=personal-pdf"></script>
+  <script src="engine/renderer.js?v=personal-pdf"></script>
+  <script src="engine/ziwei-deck.js?v=personal-pdf"></script>
   <script src="engine/pptx-exporter.js"></script>
   <script src="engine/importer.js?v=controls-audit"></script>
   <script>
@@ -697,7 +699,7 @@
       const escapeText = (s) => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
       const state = {
-        topic: "cafe-brand",
+        topic: "ziwei-reading",
         template: "editorial-magazine",
         color: "cafe-terracotta",
         font: "serif-classic",
@@ -715,12 +717,21 @@
           if (p.template && SR.MASTER_TEMPLATES.some((t) => t.id === p.template)) state.template = p.template;
           if (p.color && SR.COLOR_PALETTES.some((c) => c.id === p.color)) state.color = p.color;
           if (p.font && SR.FONT_PAIRINGS.some((f) => f.id === p.font)) state.font = p.font;
-          if (typeof p.page === "number") state.page = Math.max(0, Math.min(19, p.page));
+          if (typeof p.page === "number") state.page = Math.max(0, p.page);
           if (p.pageOverrides && typeof p.pageOverrides === "object") state.pageOverrides = p.pageOverrides;
           if (p.customHtmlByPage && typeof p.customHtmlByPage === "object") state.customHtmlByPage = p.customHtmlByPage;
         }
       } catch {}
 
+      const contentApi = window.SlideContent;
+      const queryTopic = new URLSearchParams(location.search).get("topic");
+      if (queryTopic && SR.TOPICS.some(t=>t.id===queryTopic)) {
+        if (state.topic !== queryTopic) state.pageOverrides = {};
+        state.topic=queryTopic;state.page=0;
+      }
+      let overridesByTopic = {};
+      try { overridesByTopic=JSON.parse(localStorage.getItem("slide_atelier_content_by_topic")||"{}"); } catch {}
+      if (overridesByTopic[state.topic]) state.pageOverrides=overridesByTopic[state.topic];
       const topicBar = document.getElementById("topicBar");
       const stylePresetBar = document.getElementById("stylePresetBar");
       const layoutSwitcher = document.getElementById("layoutSwitcher");
@@ -820,6 +831,8 @@
       new ResizeObserver(fitStage).observe(stageViewport);
 
       function persistState() {
+        overridesByTopic[state.topic]=state.pageOverrides;
+        try { localStorage.setItem("slide_atelier_content_by_topic",JSON.stringify(overridesByTopic)); } catch {}
         const litePayload = JSON.stringify({
           topic: state.topic,
           template: state.template,
@@ -834,7 +847,8 @@
             customHtmlByPage: state.customHtmlByPage
           }));
         } catch {}
-        openDeckBtn.href = `decks/studio-deck.html#state=${encodeURIComponent(litePayload)}`;
+        const linkState=JSON.parse(litePayload);delete linkState.pageOverrides;
+        openDeckBtn.href = `decks/studio-deck.html#state=${encodeURIComponent(JSON.stringify(linkState))}`;
       }
 
       function clearSelection() {
@@ -852,6 +866,9 @@
       }
 
       function saveCustomStageHtml() {
+        const plan=SR.getDeckPlan(currentRecipe(),state.pageOverrides,state.topic,"./assets/");
+        const previous=state.pageOverrides[state.page];
+        state.pageOverrides[state.page]={...(typeof previous==="string"?{mode:previous}:previous||{}),content:contentApi.capture(stageFrame,plan[state.page])};
         state.customHtmlByPage[pageKey()] = cleanStageSnapshotHtml();
         elResetCustom.style.visibility = "visible";
         persistState();
@@ -931,6 +948,7 @@
         const key = pageKey();
 
         stageFrame.innerHTML = state.customHtmlByPage[key] || SR.renderSlideInner(recipe, cur);
+        contentApi.bind(stageFrame, cur);
         elResetCustom.style.visibility = state.customHtmlByPage[key] ? "visible" : "hidden";
         syncUndoButtons();
         fitStage();
@@ -956,7 +974,7 @@
           return `
             <div class="topic-row">
               <button type="button" class="topic-btn ${t.id === state.topic ? "is-active" : ""}" data-topic="${t.id}">
-                <span class="topic-badge ${isCustom ? "is-custom" : ""}">${isCustom ? "自訂" : "範例"}</span>
+                <span class="topic-badge ${isCustom ? "is-custom" : ""}">${t.id === "ziwei-reading" ? "我的PDF" : isCustom ? "自訂" : "範例"}</span>
                 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeText(t.label)}</span>
               </button>
               <button type="button" class="topic-del-btn" data-delete-topic="${t.id}" title="${isCustom ? "刪除自訂來源" : "隱藏範例（可恢復）"}">✕</button>
@@ -1101,6 +1119,7 @@
         state.customHtmlByPage[k] = prevHtml;
         clearSelection();
         stageFrame.innerHTML = prevHtml;
+        saveCustomStageHtml();
         elResetCustom.style.visibility = "visible";
         syncUndoButtons();
         persistState();
@@ -1114,6 +1133,7 @@
         state.customHtmlByPage[k] = nextHtml;
         clearSelection();
         stageFrame.innerHTML = nextHtml;
+        saveCustomStageHtml();
         elResetCustom.style.visibility = "visible";
         syncUndoButtons();
         persistState();
@@ -1268,6 +1288,9 @@
           cloned.style.top = "96px";
           cloned.style.zIndex = "22";
           applyTransform(cloned, t.tx + 24, t.ty + 24, t.sc);
+          cloned.dataset.atelierExtra="true";
+          cloned.removeAttribute("data-content-path");
+          cloned.querySelectorAll("[data-content-path]").forEach(n=>n.removeAttribute("data-content-path"));
           root.appendChild(cloned);
         });
         if (cloned) selectStageElement(cloned, false);
@@ -1291,6 +1314,7 @@
           box = document.createElement("div");
           box.textContent = "雙擊或點此輸入標題與內容";
           box.style.cssText = `position:absolute;left:96px;top:96px;z-index:20;padding:8px 14px;background:${tpl.surface};color:${tpl.fg};border:1.5px solid ${tpl.primary};font-family:${tpl.bodyFont};font-size:22px;font-weight:700;cursor:move;`;
+          box.dataset.atelierExtra="true";
           root.appendChild(box);
         });
         if (box) selectStageElement(box, true);
@@ -1305,6 +1329,7 @@
           card = document.createElement("div");
           card.textContent = "新增卡片重點區塊";
           card.style.cssText = `position:absolute;left:120px;top:140px;width:300px;height:140px;z-index:18;padding:18px;background:${tpl.tint};color:${tpl.fg};border:1.5px solid ${tpl.primary};border-radius:${tpl.radius}px;font-family:${tpl.bodyFont};font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:move;`;
+          card.dataset.atelierExtra="true";
           root.appendChild(card);
         });
         if (card) selectStageElement(card, false);
@@ -1319,6 +1344,7 @@
           cir = document.createElement("div");
           cir.textContent = "焦點";
           cir.style.cssText = `position:absolute;left:180px;top:160px;width:110px;height:110px;z-index:19;background:${tpl.primary};color:#FFFFFF;border-radius:999px;font-family:${tpl.titleFont};font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;cursor:move;`;
+          cir.dataset.atelierExtra="true";
           root.appendChild(cir);
         });
         if (cir) selectStageElement(cir, true);
@@ -1332,6 +1358,7 @@
           const tpl = SR.getTemplate(currentRecipe());
           line = document.createElement("div");
           line.style.cssText = `position:absolute;left:140px;top:240px;width:360px;height:4px;z-index:18;background:${tpl.primary};cursor:move;`;
+          line.dataset.atelierExtra="true";
           root.appendChild(line);
         });
         if (line) selectStageElement(line, false);
@@ -1351,6 +1378,7 @@
             img.src = String(reader.result);
             img.alt = file.name;
             img.style.cssText = "position:absolute;left:140px;top:120px;width:360px;height:240px;object-fit:cover;z-index:20;border-radius:8px;cursor:move;border:1px solid rgba(0,0,0,0.12);";
+            img.dataset.atelierExtra="true";
             root.appendChild(img);
           });
           if (img) selectStageElement(img, false);
@@ -1362,6 +1390,8 @@
       elResetCustom.addEventListener("click", () => {
         const k = pageKey();
         delete state.customHtmlByPage[k];
+        const previous=state.pageOverrides[state.page];
+        if(typeof previous==="object") { if(previous.mode)state.pageOverrides[state.page]={mode:previous.mode};else delete state.pageOverrides[state.page]; }
         undoStacks[k] = [];
         redoStacks[k] = [];
         render();
@@ -1389,9 +1419,10 @@
         }
         const b = e.target.closest("button[data-topic]");
         if (!b) return;
+        overridesByTopic[state.topic]=state.pageOverrides;
         state.topic = b.dataset.topic;
         state.page = 0;
-        state.pageOverrides = {};
+        state.pageOverrides = overridesByTopic[state.topic] || {};
         render();
       });
 
@@ -1418,13 +1449,16 @@
       layoutSwitcher.addEventListener("click", (e) => {
         const b = e.target.closest("button[data-layout]");
         if (!b) return;
-        state.pageOverrides[state.page] = b.dataset.layout;
+        const previous=state.pageOverrides[state.page];
+        state.pageOverrides[state.page] = {...(typeof previous==="string"?{mode:previous}:previous||{}),mode:b.dataset.layout};
         delete state.customHtmlByPage[pageKey()];
         render();
       });
 
       resetPageBtn.addEventListener("click", () => {
-        delete state.pageOverrides[state.page];
+        const previous=state.pageOverrides[state.page];
+        if (previous?.content) state.pageOverrides[state.page]={content:previous.content};
+        else delete state.pageOverrides[state.page];
         delete state.customHtmlByPage[pageKey()];
         render();
       });
@@ -1598,6 +1632,42 @@
         }
       });
 
+      const editContentBtn=document.createElement("button");
+      editContentBtn.type="button";editContentBtn.className="btn";editContentBtn.id="editContentBtn";editContentBtn.textContent="編輯本頁內容";
+      resetPageBtn.parentElement.prepend(editContentBtn);
+      const sourceLink=document.createElement("a");sourceLink.className="btn";sourceLink.href="index.html?topic=ziwei-reading";sourceLink.textContent="我的 PDF：紫微斗數全書";
+      topicBar.parentElement.insertBefore(sourceLink,topicBar);
+      const dialog=document.createElement("dialog");dialog.id="contentDialog";
+      dialog.style.cssText="width:min(720px,94vw);max-height:90vh;border:1px solid #d7cebc;border-radius:12px;padding:24px;color:#1d2626;background:#fffdf9;";
+      document.body.append(dialog);
+      editContentBtn.addEventListener("click",()=>{
+        const data=SR.getDeckPlan(currentRecipe(),state.pageOverrides,state.topic,"./assets/")[state.page];
+        const labels={title:"標題",sub:"副標",summary:"摘要",kicker:"導讀標籤",notes:"講者備註／來源",desc:"說明",stat:"來源數據",action:"補充",statLabel:"數據標籤"};
+        const fs=contentApi.fields(data).filter(f=>f.value && f.path!=="chapter");
+        dialog.innerHTML='<h2 style="margin-top:0">編輯本頁內容</h2><p>文字與設計分開儲存；換風格、版面或主題後仍會保留。</p><form method="dialog" id="contentForm">'+fs.map(f=>{
+          const parts=f.path.split(".");const label=(parts[0]==="points"?`要點 ${Number(parts[1])+1}・`:"")+(labels[parts.at(-1)]||parts.at(-1));
+          return `<label style="display:block;margin:16px 0">${escapeText(label)}<textarea data-field="${escapeText(f.path)}" rows="${f.path==="notes"?4:2}" style="display:block;width:100%;padding:10px;margin-top:6px;font:16px/1.5 sans-serif;border:1px solid #d7cebc;border-radius:4px">${escapeText(f.value)}</textarea></label>`;
+        }).join("")+'<div style="display:flex;gap:12px;position:sticky;bottom:-24px;background:#fffdf9;padding:16px 0"><button class="btn btn-primary" value="save">儲存內容</button><button class="btn" value="cancel">取消</button></div></form>';
+        dialog.querySelector("form").addEventListener("submit",event=>{
+          if(event.submitter?.value!=="save")return;
+          const content=JSON.parse(JSON.stringify(data));
+          dialog.querySelectorAll("[data-field]").forEach(el=>contentApi.set(content,el.dataset.field,el.value.trim()));
+          if(!content.title){event.preventDefault();alert("請保留一個清楚的標題。");return;}
+          pushHistory();
+          const previous=state.pageOverrides[state.page];
+          state.pageOverrides[state.page]={...(typeof previous==="string"?{mode:previous}:previous||{}),content};
+          delete state.customHtmlByPage[pageKey()];render();
+        });
+        dialog.showModal();
+      });
+      const downloadContent=document.createElement("button");downloadContent.className="btn";downloadContent.id="downloadContentBtn";downloadContent.textContent="下載內容 JSON";
+      sourceLink.after(downloadContent);
+      downloadContent.addEventListener("click",()=>{
+        const top=SR.TOPICS.find(t=>t.id===state.topic);
+        const pages=SR.getDeckPlan(currentRecipe(),state.pageOverrides,state.topic,"./assets/");
+        const blob=new Blob([JSON.stringify({title:top.shortLabel,pages},null,2)],{type:"application/json;charset=utf-8"});
+        const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${top.shortLabel}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+      });
       render();
     })();
   </script>

@@ -79,3 +79,14 @@ node tools/check-content.cjs
 放映頁可下載包含樣式、圖片與播放程式的 HTML，保存編修結果後可獨立開啟；網頁字體和 PPTX 匯出函式庫仍可能需要網路。PDF 使用瀏覽器列印。沒有提供講者備忘時隱藏備忘按鈕；格式工具需先選取投影片元素才會啟用。
 
 操作稽核可依序執行 `node tools/browser-audit.mjs --ui-only`、`python tools/build-audit-fixtures.py`、`node tools/button-audit.mjs`。前一步產生可供重新匯入驗證的 PPTX，測試產物都存於不發布的 `.verification/`。
+
+
+## 使用自己的 PDF：紫微斗數全書
+
+已依使用者指定的 PDF 製作 [二十頁三卷重點導讀](index.html?topic=ziwei-reading)，不是另一份操作清單。可直接 [放映](decks/studio-deck.html?topic=ziwei-reading)、[下載可編輯 PowerPoint](exports/ziwei-reading.pptx)，或 [下載內容 JSON](examples/ziwei-reading.json)。來源、缺字處理與摘要範圍見 [來源說明](examples/ZIWEI_SOURCE.md)，原始 PDF 不公開。
+
+在工作室按「編輯本頁內容」修改標題、要點或備註，或直接點選舞台文字編輯。內容與設計分開儲存，切換四種風格、三十種版面或主題後仍保留文字與新增物件。「還原版面」保留已修改文字；「還原本頁編修」才恢復原始內容。可按「下載內容 JSON」備份修改後的版本；本機編修不自動同步到 GitHub。
+
+這次 AGENTS.md 的實際用途是要求 AI：先核對來源、整理為標準資料、依內容挑版面、保留使用者修改，最後以實際截圖和 PowerPoint 驗收。網站本身仍是純前端工具，沒有自動讀懂任意書籍的線上模型。
+
+本份簡報與內容保存功能的驗證：`node tools/personal-deck-audit.mjs`。原有三份示範內容仍由 `node tools/check-content.cjs` 的原始資料雜湊保護。

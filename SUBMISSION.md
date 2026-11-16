@@ -30,3 +30,6 @@ AGENTS.md 是給 AI 開發助手閱讀的規則，網站目前沒有自動呼叫
 4. Source 選 Deploy from a branch，Branch 選 main，資料夾選 / (root)，按 Save。
 5. 等 Pages 完成部署，使用該頁顯示的 Visit site 開啟網站，並測試首頁、專案介紹與內容匯入。
 6. 把實際 Repository 與網站網址填回上方，再貼到課程平台。
+
+
+實際擴充成果：[《紫微斗數全書》二十頁簡報](https://estrella123456789.github.io/S/index.html?topic=ziwei-reading)，可在同一份內容上修改文字、切換四套風格與三十種版面，並匯出可編輯 PowerPoint。AI 依規則核對來源、建立標準內容物件並做截圖驗收，原始三份示範完整保留。未公開原始 PDF，也未假裝網站已串接線上生成式 AI。

@@ -10,10 +10,12 @@
   </style>
 </head>
 <body>
-  <div id="studioQuickPill"><button type="button" id="studioPillToggle" aria-expanded="false">簡報設定</button><div id="studioQuickPanel"><div class="sq-label">主題</div><div id="sqTopics" class="sq-grid"></div><div class="sq-label">整份簡報風格</div><div id="sqPresets" class="sq-grid"></div><div class="sq-label">本頁版面</div><div id="sqLayouts" class="sq-grid"></div><p class="sq-help">每套風格包含固定的色彩與字體。變更風格或版面會重新套用設計；舞台上的自訂編修請先確認保存。</p></div></div>
+  <div id="studioQuickPill"><button type="button" id="studioPillToggle" aria-expanded="false">簡報設定</button><div id="studioQuickPanel"><div class="sq-label">主題</div><div id="sqTopics" class="sq-grid"></div><div class="sq-label">整份簡報風格</div><div id="sqPresets" class="sq-grid"></div><div class="sq-label">本頁版面</div><div id="sqLayouts" class="sq-grid"></div><p class="sq-help">每套風格包含固定的色彩與字體。變更風格或版面會重新套用設計，內容文字與新增物件會保留。</p></div></div>
   <main class="deck" id="studioDeck"></main>
   <script src="../engine/template-svgs.js"></script>
-  <script src="../engine/renderer.js?v=controls-audit"></script>
+  <script src="../engine/content-state.js?v=personal-pdf"></script>
+  <script src="../engine/renderer.js?v=personal-pdf"></script>
+  <script src="../engine/ziwei-deck.js?v=personal-pdf"></script>
   <script src="../engine/pptx-exporter.js"></script>
   <script src="../engine/importer.js?v=controls-audit"></script>
   <script>
@@ -26,9 +28,11 @@
       const match = location.hash.match(/state=([^&]+)/);
       let fromHash = {};
       try { if (match) fromHash = read(decodeURIComponent(match[1])); } catch {}
-      const state = {topic:"cafe-brand",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
+      const state = {topic:"ziwei-reading",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
       const topicParam = new URLSearchParams(location.search).get("topic");
-      if (topicParam) { state.topic = topicParam; state.page = 0; state.pageOverrides = {}; }
+      let overridesByTopic={};try{overridesByTopic=read(localStorage.getItem("slide_atelier_content_by_topic"));}catch{}
+      if (topicParam) { state.topic = topicParam; state.page = 0; state.pageOverrides = overridesByTopic[state.topic]||{}; }
+      else if(overridesByTopic[state.topic]) state.pageOverrides=overridesByTopic[state.topic];
       if (!SR.TOPICS.some(t=>t.id===state.topic)) state.topic="cafe-brand";
       if (saved.topic !== state.topic) state.customHtmlByPage = {};
       const tpl = SR.getTemplate({templateId:state.template});
@@ -44,20 +48,21 @@
       plan.forEach((data,i)=>{
         const slide=document.createElement("section"); slide.className="slide";
         slide.innerHTML=state.customHtmlByPage[`${state.topic}_${i}`] || SR.renderSlideInner(recipe,data);
+        window.SlideContent.bind(slide,data);
         const notes=document.createElement("aside");notes.className="notes";notes.textContent=data.notes || "";slide.append(notes);deck.append(slide);
       });
       const current=()=>Math.max(0,Array.from(deck.children).findIndex(s=>s.classList.contains("is-active")));
-      const save=()=>{state.page=current();try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
+      const save=()=>{state.page=current();overridesByTopic[state.topic]=state.pageOverrides;try{localStorage.setItem("slide_atelier_content_by_topic",JSON.stringify(overridesByTopic));localStorage.setItem(KEY,JSON.stringify(state));}catch{}};
       window.addEventListener("atelier:slidechange",save);
       // Changes made during playback survive returning to the studio.
-      deck.addEventListener("input",e=>{const slide=e.target.closest(".slide");if(!slide)return;const clone=slide.cloneNode(true);clone.querySelectorAll(".notes").forEach(n=>n.remove());clone.querySelectorAll("[contenteditable]").forEach(n=>n.removeAttribute("contenteditable"));state.customHtmlByPage[`${state.topic}_${Array.from(deck.children).indexOf(slide)}`]=clone.innerHTML;save();});
+      deck.addEventListener("input",e=>{const slide=e.target.closest(".slide");if(!slide)return;const index=Array.from(deck.children).indexOf(slide),prev=state.pageOverrides[index];state.pageOverrides[index]={...(typeof prev==="string"?{mode:prev}:prev||{}),content:window.SlideContent.capture(slide,plan[index])};const clone=slide.cloneNode(true);clone.querySelectorAll(".notes").forEach(n=>n.remove());clone.querySelectorAll("[contenteditable]").forEach(n=>n.removeAttribute("contenteditable"));state.customHtmlByPage[`${state.topic}_${Array.from(deck.children).indexOf(slide)}`]=clone.innerHTML;save();});
       const button=document.getElementById("studioPillToggle"),panel=document.getElementById("studioQuickPanel");
       const chips=(id,items,selected,choose)=>{const host=document.getElementById(id);host.replaceChildren();items.forEach(item=>{const b=document.createElement("button");b.type="button";b.className=`sq-chip ${selected===item.id?"is-active":""}`;b.textContent=item.label||item.name;b.addEventListener("click",()=>choose(item));host.append(b);});};
       const reload=()=>{save();location.reload();};
       const renderPanel=()=>{
-        chips("sqTopics",SR.TOPICS,state.topic,t=>{state.topic=t.id;state.pageOverrides={};state.customHtmlByPage={};state.page=0;try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}location.href=`${location.pathname}#1`;location.reload();});
+        chips("sqTopics",SR.TOPICS,state.topic,t=>{overridesByTopic[state.topic]=state.pageOverrides;state.topic=t.id;state.pageOverrides=overridesByTopic[t.id]||{};state.customHtmlByPage={};state.page=0;try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}location.href=`${location.pathname}#1`;location.reload();});
         chips("sqPresets",SR.STYLE_PRESETS,SR.STYLE_PRESETS.find(p=>p.templateId===state.template)?.id,p=>{state.template=p.templateId;state.color=p.colorId;state.font=p.fontId;state.customHtmlByPage={};reload();});
-        chips("sqLayouts",SR.COMPOUND_LAYOUTS,plan[current()].mode,l=>{state.pageOverrides[current()]=l.id;delete state.customHtmlByPage[`${state.topic}_${current()}`];reload();});
+        chips("sqLayouts",SR.COMPOUND_LAYOUTS,plan[current()].mode,l=>{const i=current(),prev=state.pageOverrides[i];state.pageOverrides[i]={...(typeof prev==="string"?{mode:prev}:prev||{}),mode:l.id};delete state.customHtmlByPage[`${state.topic}_${current()}`];reload();});
       };
       button.addEventListener("click",()=>{renderPanel();panel.classList.toggle("is-open");button.setAttribute("aria-expanded",String(panel.classList.contains("is-open")));});
       window.addEventListener("hashchange",()=>{if(panel.classList.contains("is-open"))renderPanel();});
