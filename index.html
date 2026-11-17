@@ -532,10 +532,8 @@
     <aside class="sidebar">
       <section class="ctrl-block">
         <div class="ctrl-head">
-          <span>1. 資料來源與範例</span>
-          <button type="button" class="btn" id="restoreExamplesBtn" style="padding:2px 7px;font-size:10px;display:none;">↺ 恢復範例</button>
+          <span>1. 簡報主題與範例</span>
         </div>
-        <button type="button" class="btn import-solid-btn" id="openImportModalBtn">＋ 匯入資料 / 檔案生成簡報</button>
         <div class="topic-stack" id="topicBar"></div><p style="font-size:11px;line-height:1.5;color:var(--muted);margin:8px 0 0;">保留原有三份 20 頁示範；示範中的研究及商業數據不作為已查證事實，正式使用請以你的來源替換。</p>
       </section>
 
@@ -661,65 +659,20 @@
     </section>
   </main>
 
-  <div class="import-modal-backdrop" id="importModal" aria-hidden="true">
-    <div class="import-modal" role="dialog" aria-modal="true" aria-labelledby="importModalTitle">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
-        <div>
-          <h2 id="importModalTitle" style="margin:0;font-size:17px;font-weight:800;">匯入資料 / 檔案生成簡報</h2>
-          <p style="margin:3px 0 0;font-size:12px;color:var(--muted);">支援文字、Markdown、JSON、CSV、Word、PowerPoint 與 PDF 的文字內容，套用 4 套風格與 30 種版面。這裡不會自動呼叫 AI；需要語意整理時，可複製下方指令給 AI，再匯入它產生的 JSON。</p>
-        </div>
-        <button type="button" class="btn" id="closeImportModalBtn">✕ 關閉</button>
-      </div>
-
-      <div>
-        <label for="importTitleInput" style="display:block;font-size:12px;font-weight:700;margin-bottom:4px;">簡報標題（選填，留空將自動擷取）</label>
-        <input type="text" class="import-input" id="importTitleInput" placeholder="例如：2026 智慧醫療專案期末報告" />
-      </div>
-
-      <div class="import-dropzone" id="importDropzone">
-        <input type="file" id="importFileInput" accept=".txt,.md,.csv,.json,.docx,.pptx,.pdf" style="display:none;" />
-        <div style="font-size:13px;font-weight:700;color:#0f5257;">點擊選擇檔案，或將檔案拖放到此處</div>
-        <div style="font-size:11.5px;color:var(--muted);margin-top:4px;">支援格式：.docx / .pptx / .pdf / .md / .txt / .json / .csv；匯入以文字整理為主，不保留來源檔的原始版面。</div>
-      </div>
-
-      <div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
-          <label for="importTextInput" style="font-size:12px;font-weight:700;">原始內容 / 大綱 / Canonical JSON</label>
-          <div style="display:flex;gap:6px;">
-            <button type="button" class="ed-btn" id="fillSampleMdBtn" title="填入示範大綱快速測試">📝 載入範例大綱</button>
-            <button type="button" class="ed-btn" id="copyAiPromptBtn" title="複製 AI 結構化整理提示詞">複製給 AI 的整理指令</button>
-          </div>
-        </div>
-        <textarea class="import-textarea" id="importTextInput" placeholder="在此貼上文章、筆記、會議紀錄、Markdown 大綱（使用 # / ## 分頁），或貼上 AI 產生的 Canonical Slide Content JSON..."></textarea>
-      </div>
-
-      <div id="importStatusMsg" style="font-size:12px;color:#0f5257;min-height:18px;"></div>
-
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-        <button type="button" class="btn" id="clearImportBtn" style="color:#991b1b;border-color:#fca5a5;">🗑 清空 / 移除檔案</button>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <button type="button" class="btn" id="cancelImportBtn">取消</button>
-          <button type="button" class="btn btn-primary" id="runImportBtn">解析並套用</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <script src="engine/template-svgs.js"></script>
   <script src="engine/content-state.js?v=adaptive-prose-1"></script>
   <script src="engine/renderer.js?v=adaptive-prose-1"></script>
-  <script src="engine/ziwei-deck.js?v=adaptive-prose-1"></script>
-  <script src="engine/pptx-exporter.js"></script>
-  <script src="engine/importer.js?v=controls-audit"></script>
+  <script src="engine/pptx-exporter.js?v=stage-units-1"></script>
+  <script src="engine/topics.js?v=nasa-example"></script>
   <script>
-    (() => {
+    (async () => {
+      await window.SlideTopicsReady;
       const SR = window.SlideRenderer;
-      if (window.SlideImporter) window.SlideImporter.registerAllIntoRenderer(SR);
       const STORAGE_KEY = "slide_atelier_v6_state";
       const escapeText = (s) => String(s ?? "").replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
       const state = {
-        topic: "ziwei-reading",
+        topic: "cafe-brand",
         template: "editorial-magazine",
         color: "cafe-terracotta",
         font: "serif-classic",
@@ -752,6 +705,8 @@
       let overridesByTopic = {};
       try { overridesByTopic=JSON.parse(localStorage.getItem("slide_atelier_content_by_topic")||"{}"); } catch {}
       if (overridesByTopic[state.topic]) state.pageOverrides=overridesByTopic[state.topic];
+      const queryStyle=new URLSearchParams(location.search).get("style");
+      if(queryStyle && SR.STYLE_PRESETS.some(p=>p.templateId===queryStyle))state.template=queryStyle;
       const topicBar = document.getElementById("topicBar");
       const stylePresetBar = document.getElementById("stylePresetBar");
       const layoutSwitcher = document.getElementById("layoutSwitcher");
@@ -969,20 +924,9 @@
       function render() {
         const prevScroll = sidebarEl ? sidebarEl.scrollTop : 0;
         clearSelection();
-        const hiddenNow = window.SlideImporter?.getHiddenExampleIds() || [];
-        const firstVisible = SR.TOPICS.find(t => !hiddenNow.includes(t.id));
-        if (!firstVisible) {
-          topicBar.replaceChildren(); pageSelect.replaceChildren(); layoutSwitcher.replaceChildren();
-          document.getElementById("restoreExamplesBtn").style.display = "inline-flex";
-          downloadPptBtn.disabled = true;
-          openDeckBtn.removeAttribute("href"); openDeckBtn.setAttribute("aria-disabled", "true");
-          stageModeLabel.textContent = "尚未選擇內容";
-          stageFrame.innerHTML = '<div style="width:1280px;height:720px;background:#faf6ee;display:flex;align-items:center;justify-content:center;font-size:32px;color:#233030;">請匯入內容，或按「恢復範例」</div>';
-          fitStage(); return;
-        }
         downloadPptBtn.disabled = false; openDeckBtn.removeAttribute("aria-disabled");
-        if (firstVisible && !SR.TOPICS.some(t => t.id === state.topic && !hiddenNow.includes(t.id))) {
-          state.topic = firstVisible.id;
+        if (!SR.TOPICS.some(t => t.id === state.topic)) {
+          state.topic = SR.TOPICS[0].id;
           state.page = 0;
         }
         const recipe = currentRecipe();
@@ -991,12 +935,6 @@
         const cur = plan[state.page];
         const key = pageKey();
 
-        const cached=state.customHtmlByPage[key];
-        if (state.topic==="ziwei-reading" && cached && !cached.includes('data-design-revision="adaptive-prose-1"')) {
-          // Keep the old composition available locally; canonical text and extras remain authoritative.
-          try {const backup=JSON.parse(localStorage.getItem("slide_atelier_layout_backup")||"{}");backup[key]=cached;localStorage.setItem("slide_atelier_layout_backup",JSON.stringify(backup));}catch{}
-          delete state.customHtmlByPage[key];
-        }
         stageFrame.innerHTML = state.customHtmlByPage[key] || SR.renderSlideInner(recipe, cur);
         contentApi.bind(stageFrame, cur);
         refreshTextTargets();
@@ -1011,27 +949,14 @@
         const layoutObj = SR.COMPOUND_LAYOUTS.find((l) => l.id === cur.mode);
         stageModeLabel.textContent = layoutObj ? `${layoutObj.label} (${cur.mode})` : cur.mode;
 
-        const hiddenExamples = window.SlideImporter ? window.SlideImporter.getHiddenExampleIds() : [];
-        const restoreExamplesBtn = document.getElementById("restoreExamplesBtn");
-        if (restoreExamplesBtn) restoreExamplesBtn.style.display = hiddenExamples.length ? "inline-flex" : "none";
-
-        const visibleTopics = SR.TOPICS.filter((t) => !hiddenExamples.includes(t.id));
-        if (visibleTopics.length && !visibleTopics.some((t) => t.id === state.topic)) {
-          state.topic = visibleTopics[0].id;
-        }
-
-        topicBar.innerHTML = visibleTopics.length ? visibleTopics.map((t) => {
-          const isCustom = t.id.startsWith("custom-");
-          return `
-            <div class="topic-row">
-              <button type="button" class="topic-btn ${t.id === state.topic ? "is-active" : ""}" data-topic="${t.id}">
-                <span class="topic-badge ${isCustom ? "is-custom" : ""}">${t.id === "ziwei-reading" ? "我的PDF" : isCustom ? "自訂" : "範例"}</span>
-                <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeText(t.label)}</span>
-              </button>
-              <button type="button" class="topic-del-btn" data-delete-topic="${t.id}" title="${isCustom ? "刪除自訂來源" : "隱藏範例（可恢復）"}">✕</button>
-            </div>
-          `;
-        }).join("") : `<div style="font-size:11.5px;color:var(--muted);padding:6px 4px;">目前無資料來源，請點擊上方實色按鈕匯入資料或恢復範例。</div>`;
+        topicBar.innerHTML = SR.TOPICS.map((t) => `
+          <div class="topic-row">
+            <button type="button" class="topic-btn ${t.id === state.topic ? "is-active" : ""}" data-topic="${t.id}">
+              <span class="topic-badge">範例</span>
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeText(t.label)}</span>
+            </button>
+          </div>
+        `).join("");
 
         const presets = SR.STYLE_PRESETS || [];
         stylePresetBar.innerHTML = presets.map((pr) => {
@@ -1456,24 +1381,6 @@
 
       // Sidebar Controls
       topicBar.addEventListener("click", (e) => {
-        const delBtn = e.target.closest("button[data-delete-topic]");
-        if (delBtn) {
-          const delId = delBtn.dataset.deleteTopic;
-          if (delId.startsWith("custom-")) {
-            if (window.SlideImporter) window.SlideImporter.deleteCustomTopic(SR, delId);
-          } else {
-            if (window.SlideImporter) window.SlideImporter.hideExampleId(delId);
-          }
-          const hidden = window.SlideImporter ? window.SlideImporter.getHiddenExampleIds() : [];
-          const remaining = SR.TOPICS.filter((t) => !hidden.includes(t.id));
-          if (state.topic === delId && remaining.length) {
-            state.topic = remaining[0].id;
-            state.page = 0;
-            state.pageOverrides = {};
-          }
-          render();
-          return;
-        }
         const b = e.target.closest("button[data-topic]");
         if (!b) return;
         overridesByTopic[state.topic]=state.pageOverrides;
@@ -1482,14 +1389,6 @@
         state.pageOverrides = overridesByTopic[state.topic] || {};
         render();
       });
-
-      const restoreExamplesBtn = document.getElementById("restoreExamplesBtn");
-      if (restoreExamplesBtn) {
-        restoreExamplesBtn.addEventListener("click", () => {
-          if (window.SlideImporter) window.SlideImporter.restoreHiddenExamples();
-          render();
-        });
-      }
 
       stylePresetBar.addEventListener("click", (e) => {
         const b = e.target.closest("button[data-preset]");
@@ -1551,121 +1450,6 @@
         }
       });
 
-      // 匯入文字 / Word / PPT / PDF 生成簡報 Modal
-      const importModal = document.getElementById("importModal");
-      const openImportModalBtn = document.getElementById("openImportModalBtn");
-      const closeImportModalBtn = document.getElementById("closeImportModalBtn");
-      const cancelImportBtn = document.getElementById("cancelImportBtn");
-      const importDropzone = document.getElementById("importDropzone");
-      const importFileInput = document.getElementById("importFileInput");
-      const importTitleInput = document.getElementById("importTitleInput");
-      const importTextInput = document.getElementById("importTextInput");
-      const importStatusMsg = document.getElementById("importStatusMsg");
-      const copyAiPromptBtn = document.getElementById("copyAiPromptBtn");
-      const runImportBtn = document.getElementById("runImportBtn");
-
-      const setImportModalOpen = (open) => {
-        importModal.classList.toggle("is-open", open);
-        importModal.setAttribute("aria-hidden", open ? "false" : "true");
-        if (open) importStatusMsg.textContent = "";
-      };
-
-      openImportModalBtn.addEventListener("click", () => setImportModalOpen(true));
-      closeImportModalBtn.addEventListener("click", () => setImportModalOpen(false));
-      cancelImportBtn.addEventListener("click", () => setImportModalOpen(false));
-      const clearImportBtn = document.getElementById("clearImportBtn");
-      if (clearImportBtn) {
-        clearImportBtn.addEventListener("click", () => {
-          importTitleInput.value = "";
-          importTextInput.value = "";
-          importFileInput.value = "";
-          importStatusMsg.style.color = "#0f5257";
-          importStatusMsg.textContent = "已清空內容與檔案，可重新上傳或貼上資料。";
-        });
-      }
-      importModal.addEventListener("click", (e) => {
-        if (e.target === importModal) setImportModalOpen(false);
-      });
-
-      const handleImportedFile = async (file) => {
-        if (!file || !window.SlideImporter) return;
-        importStatusMsg.style.color = "#0f5257";
-        importStatusMsg.textContent = `⏳ 正在讀取「${file.name}」...`;
-        try {
-          const text = await window.SlideImporter.readFileAsText(file);
-          importTextInput.value = text;
-          if (!importTitleInput.value.trim()) {
-            importTitleInput.value = file.name.replace(/\.[^.]+$/, "");
-          }
-          importStatusMsg.textContent = `✅ 已讀取「${file.name}」（共 ${text.length} 字），請按「解析並套用」生成簡報。`;
-        } catch (err) {
-          importStatusMsg.style.color = "#b91c1c";
-          importStatusMsg.textContent = `❌ 讀檔失敗：${err?.message || err}`;
-        }
-      };
-
-      importDropzone.addEventListener("click", () => importFileInput.click());
-      importFileInput.addEventListener("change", (e) => {
-        if (e.target.files && e.target.files[0]) handleImportedFile(e.target.files[0]);
-        e.target.value = "";
-      });
-      importDropzone.addEventListener("dragover", (e) => {
-        e.preventDefault();
-        importDropzone.classList.add("is-dragover");
-      });
-      importDropzone.addEventListener("dragleave", () => importDropzone.classList.remove("is-dragover"));
-      importDropzone.addEventListener("drop", (e) => {
-        e.preventDefault();
-        importDropzone.classList.remove("is-dragover");
-        if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
-          handleImportedFile(e.dataTransfer.files[0]);
-        }
-      });
-
-      copyAiPromptBtn.addEventListener("click", async () => {
-        if (!window.SlideImporter) return;
-        const prompt = window.SlideImporter.getAiPromptTemplate();
-        try {
-          await navigator.clipboard.writeText(prompt);
-          importStatusMsg.style.color = "#0f5257";
-          importStatusMsg.textContent = "✅ 已複製 AI 結構化整理提示詞！可貼給 AI 整理資料後，再把結果 JSON 貼回這裡。";
-        } catch {
-          importTextInput.value = prompt;
-          importStatusMsg.textContent = "已將 AI 提示詞範本填入輸入框，可直接複製使用。";
-        }
-      });
-
-      const fillSampleMdBtn = document.getElementById("fillSampleMdBtn");
-      if (fillSampleMdBtn) {
-        fillSampleMdBtn.addEventListener("click", () => {
-          importTitleInput.value = "用規則延伸簡報";
-          importTextInput.value = [
-            "## 先定規則，再新增內容", "- 閱讀規範：確認風格與資料格式。",
-            "- 整理來源：沒有來源的數字與圖片留空。", "- 套用版面：同類內容使用相同版面。", "",
-            "## 新增內容沿用同一套流程", "- 建立資料：參考範例建立 JSON。",
-            "- 匯入預覽：匯入資料並選擇鎖定風格。", "- 檢查成果：逐頁確認文字與對齊。"
-          ].join("\n");
-          importStatusMsg.style.color = "#0f5257";
-          importStatusMsg.textContent = "✅ 已載入結構化示範大綱，點擊右下角「解析並套用」即可生成簡報！";
-        });
-      }
-
-      runImportBtn.addEventListener("click", () => {
-        if (!window.SlideImporter) return;
-        try {
-          const deck = window.SlideImporter.importAndRegister(SR, importTextInput.value, importTitleInput.value.trim());
-          state.topic = deck.id;
-          state.customHtmlByPage = {};
-          state.page = 0;
-          state.pageOverrides = {};
-          setImportModalOpen(false);
-          render();
-        } catch (err) {
-          importStatusMsg.style.color = "#b91c1c";
-          importStatusMsg.textContent = `❌ 解析失敗：${err?.message || err}`;
-        }
-      });
-
       downloadPptBtn.addEventListener("click", async () => {
         const orig = downloadPptBtn.textContent;
         downloadPptBtn.disabled = true;
@@ -1692,8 +1476,6 @@
       const editContentBtn=document.createElement("button");
       editContentBtn.type="button";editContentBtn.className="btn";editContentBtn.id="editContentBtn";editContentBtn.textContent="編輯本頁內容";
       resetPageBtn.parentElement.prepend(editContentBtn);
-      const sourceLink=document.createElement("a");sourceLink.className="btn";sourceLink.href="index.html?topic=ziwei-reading";sourceLink.textContent="我的 PDF：紫微斗數全書";
-      topicBar.parentElement.insertBefore(sourceLink,topicBar);
       const dialog=document.createElement("dialog");dialog.id="contentDialog";
       dialog.style.cssText="width:min(720px,94vw);max-height:90vh;border:1px solid #d7cebc;border-radius:12px;padding:24px;color:#1d2626;background:#fffdf9;";
       document.body.append(dialog);
@@ -1717,16 +1499,11 @@
         });
         dialog.showModal();
       });
-      const downloadContent=document.createElement("button");downloadContent.className="btn";downloadContent.id="downloadContentBtn";downloadContent.textContent="下載內容 JSON";
-      sourceLink.after(downloadContent);
-      downloadContent.addEventListener("click",()=>{
-        const top=SR.TOPICS.find(t=>t.id===state.topic);
-        const pages=SR.getDeckPlan(currentRecipe(),state.pageOverrides,state.topic,"./assets/");
-        const blob=new Blob([JSON.stringify({title:top.shortLabel,pages},null,2)],{type:"application/json;charset=utf-8"});
-        const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${top.shortLabel}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-      });
       render();
-    })();
+    })().catch(error=>{
+      console.error(error);
+      const message=document.createElement("p");message.setAttribute("role","alert");message.textContent=error.message;message.style.cssText="padding:24px;color:#9e3232;background:#fff;position:fixed;bottom:0;z-index:9999;";document.body.append(message);
+    });
   </script>
 </body>
 </html>

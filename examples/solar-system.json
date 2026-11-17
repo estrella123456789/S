@@ -1,0 +1,313 @@
+{
+  "id": "solar-system",
+  "title": "八顆行星，一個太陽系",
+  "label": "NASA 太陽系導讀（公開資料・7頁）",
+  "shortLabel": "NASA 太陽系導讀",
+  "preferredStyle": "keynote-dark",
+  "chapters": [
+    "形成",
+    "分類",
+    "比較",
+    "數據",
+    "結論"
+  ],
+  "sources": [
+    {
+      "title": "NASA Solar System Facts",
+      "url": "https://science.nasa.gov/solar-system/solar-system-facts/"
+    },
+    {
+      "title": "NASA About Planets",
+      "url": "https://science.nasa.gov/solar-system/planets/"
+    },
+    {
+      "title": "JPL Planets",
+      "url": "https://ssd.jpl.nasa.gov/planets/"
+    }
+  ],
+  "workflow": {
+    "rules": "AGENTS.md",
+    "outline": [
+      {
+        "page": 1,
+        "title": "八顆行星，一個太陽系",
+        "layout": "cover-centered"
+      },
+      {
+        "page": 2,
+        "title": "太陽系從雲團，逐步形成行星",
+        "layout": "horizontal-timeline"
+      },
+      {
+        "page": 3,
+        "title": "距離與材料，塑造三類行星",
+        "layout": "three-col-defense"
+      },
+      {
+        "page": 4,
+        "title": "用同一張表，比較三類行星",
+        "layout": "matrix-table-split"
+      },
+      {
+        "page": 5,
+        "title": "類地行星占八顆行星的一半",
+        "layout": "bars-insight-split"
+      },
+      {
+        "page": 6,
+        "title": "行星定義，需要同時滿足三個條件",
+        "layout": "three-col-defense"
+      },
+      {
+        "page": 7,
+        "title": "讀太陽系資料，先分清三個尺度",
+        "layout": "banner-3-rows"
+      }
+    ],
+    "calculation": "行星顆數：4+2+2=8；50%=4/8；25%=2/8。不是質量或體積比例。"
+  },
+  "pages": [
+    {
+      "mode": "cover-centered",
+      "title": "八顆行星，一個太陽系",
+      "sub": "從形成、分類到數據判讀，讀懂我們的宇宙鄰居。",
+      "summary": "從來源出發，建立太陽系的閱讀架構。",
+      "points": [
+        {
+          "num": "01",
+          "title": "形成脈絡",
+          "desc": "太陽系源自約四十六億年前的氣體與塵埃雲。",
+          "action": "先讀形成過程"
+        },
+        {
+          "num": "02",
+          "title": "行星分類",
+          "desc": "八顆行星可分為類地行星、氣體巨行星與冰巨行星。",
+          "action": "再看材質差異"
+        },
+        {
+          "num": "03",
+          "title": "數據判讀",
+          "desc": "分類顆數能呈現組成，卻不能代表質量或體積比例。",
+          "action": "最後辨別尺度"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://science.nasa.gov/solar-system/solar-system-facts/\n段落：Formation / Structure\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。"
+    },
+    {
+      "mode": "horizontal-timeline",
+      "title": "太陽系從雲團，逐步形成行星",
+      "sub": "約四十六億年前開始；以下是形成順序，不是等距時間刻度。",
+      "summary": "重力聚合物質，碰撞形成不同天體。",
+      "points": [
+        {
+          "num": "01",
+          "title": "雲團塌縮",
+          "desc": "星際氣體與塵埃雲塌縮，形成旋轉的物質圓盤。",
+          "action": "形成太陽星雲"
+        },
+        {
+          "num": "02",
+          "title": "太陽誕生",
+          "desc": "中心物質受重力聚集，核心開始進行氫融合反應。",
+          "action": "中央恆星成形"
+        },
+        {
+          "num": "03",
+          "title": "天體聚合",
+          "desc": "盤中物質團塊互相碰撞，逐漸聚合成更大的天體。",
+          "action": "形成行星等天體"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://science.nasa.gov/solar-system/solar-system-facts/\n段落：Formation\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。"
+    },
+    {
+      "mode": "three-col-defense",
+      "title": "距離與材料，塑造三類行星",
+      "sub": "分類描述行星的整體結構；不是只依外觀顏色來區分。",
+      "summary": "內側岩質，外側則有兩種巨行星。",
+      "points": [
+        {
+          "num": "01",
+          "title": "類地行星",
+          "desc": "水金地火位於內側，具有固態岩質表面且體積較小。",
+          "action": "先辨認岩質表面"
+        },
+        {
+          "num": "02",
+          "title": "氣體巨星",
+          "desc": "木星與土星位於外側，其結構不同於內側岩質行星。",
+          "action": "不要當作岩質球體"
+        },
+        {
+          "num": "03",
+          "title": "冰巨行星",
+          "desc": "天王星與海王星另列一類，不能全歸成氣體巨行星。",
+          "action": "區分兩種巨行星"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://science.nasa.gov/solar-system/planets/\n段落：Inner Planets / Outer Planets\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。"
+    },
+    {
+      "mode": "matrix-table-split",
+      "title": "用同一張表，比較三類行星",
+      "sub": "表中依 NASA 分類列出成員與顆數，合計八顆行星。",
+      "summary": "把成員與顆數分開，才不會混淆分類。",
+      "points": [
+        {
+          "num": "01",
+          "title": "岩質內側",
+          "desc": "四顆內行星是水星、金星、地球與火星，皆有固態表面。",
+          "action": "共四顆"
+        },
+        {
+          "num": "02",
+          "title": "外側氣體",
+          "desc": "木星與土星都是氣體巨行星，並不具有硬質表面。",
+          "action": "共兩顆"
+        },
+        {
+          "num": "03",
+          "title": "外側冰巨",
+          "desc": "天王星與海王星是冰巨行星，同屬太陽系外行星。",
+          "action": "共兩顆"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://science.nasa.gov/solar-system/planets/\n段落：Inner Planets / Outer Planets\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。",
+      "matrixTable": {
+        "headers": [
+          "類型",
+          "成員",
+          "顆數"
+        ],
+        "rows": [
+          [
+            "類地行星",
+            "水・金・地・火",
+            "4"
+          ],
+          [
+            "氣體巨行星",
+            "木・土",
+            "2"
+          ],
+          [
+            "冰巨行星",
+            "天王・海王",
+            "2"
+          ]
+        ],
+        "highlightRow": 0,
+        "highlightCol": 2,
+        "thresholdTitle": "表格計數基準",
+        "thresholdStat": "8 顆行星",
+        "thresholdNote": "不含太陽、衛星及矮行星。",
+        "conclusionTitle": "外行星還要再分兩類",
+        "conclusionBody": "木土是氣體巨行星；天王與海王是冰巨行星，名稱相近不代表結構相同。"
+      }
+    },
+    {
+      "mode": "bars-insight-split",
+      "title": "類地行星占八顆行星的一半",
+      "sub": "計算方式：各類顆數 ÷ 八顆行星；不是質量、體積或距離占比。",
+      "summary": "顆數比例不代表質量、體積或距離。",
+      "points": [
+        {
+          "num": "01",
+          "title": "類地行星",
+          "desc": "水星、金星、地球與火星共四顆，占八顆的一半。",
+          "action": "四顆岩質",
+          "stat": "50%"
+        },
+        {
+          "num": "02",
+          "title": "氣體巨星",
+          "desc": "木星與土星共兩顆，占太陽系八顆行星的四分之一。",
+          "action": "兩顆氣體",
+          "stat": "25%"
+        },
+        {
+          "num": "03",
+          "title": "冰巨行星",
+          "desc": "天王星與海王星共兩顆，顆數占比同樣為四分之一。",
+          "action": "兩顆冰巨",
+          "stat": "25%"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://science.nasa.gov/solar-system/planets/\n段落：Inner Planets / Outer Planets；百分比為本簡報依顆數計算\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。",
+      "highlightStat": {
+        "value": "50%",
+        "label": "類地行星顆數占比",
+        "desc": "四顆類地行星 ÷ 八顆行星。"
+      }
+    },
+    {
+      "mode": "three-col-defense",
+      "title": "行星定義，需要同時滿足三個條件",
+      "sub": "以下是太陽系行星的分類條件，不直接套用到所有天體。",
+      "summary": "三個條件都成立，才是太陽系行星。",
+      "points": [
+        {
+          "num": "01",
+          "title": "繞日公轉",
+          "desc": "天體須繞太陽運行，先與環繞行星的衛星區分開來。",
+          "action": "確認公轉對象"
+        },
+        {
+          "num": "02",
+          "title": "近似球形",
+          "desc": "自身質量須足以藉重力聚成近似球形，而非不規則碎塊。",
+          "action": "確認自身形狀"
+        },
+        {
+          "num": "03",
+          "title": "軌道主導",
+          "desc": "須在軌道鄰域具有重力主導地位，不能只看球形外觀。",
+          "action": "三項必須同時成立"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://ssd.jpl.nasa.gov/planets/\n段落：Planets / 2006 definition\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。"
+    },
+    {
+      "mode": "banner-3-rows",
+      "title": "讀太陽系資料，先分清三個尺度",
+      "sub": "整理重點：形成是過程、分類是結構、圖表則必須先說分母。",
+      "summary": "分清來源與計算，正確理解圖表。",
+      "points": [
+        {
+          "num": "01",
+          "title": "過程尺度",
+          "desc": "形成示意呈現事件先後，不表示各階段花費相同時間。",
+          "action": "順序不等於時長"
+        },
+        {
+          "num": "02",
+          "title": "分類尺度",
+          "desc": "類地、氣體與冰巨三類，提供理解行星差異的框架。",
+          "action": "分類不等於大小"
+        },
+        {
+          "num": "03",
+          "title": "統計尺度",
+          "desc": "顆數比例只比較各類數量，不能直接推論質量與體積。",
+          "action": "比例要交代分母"
+        }
+      ],
+      "image": null,
+      "kicker": "NASA SCIENCE · 太陽系導讀",
+      "notes": "資料來源：https://science.nasa.gov/solar-system/solar-system-facts/\n段落：Formation / Structure；本頁為來源整理與圖表閱讀結論\n內容為中文整理；比例為根據八顆行星分類的顆數計算，不代表質量、體積或距離。"
+    }
+  ]
+}

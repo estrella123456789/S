@@ -134,31 +134,34 @@ window.SlidePptxExporter = (() => {
     return Array.from(el.children).some((ch) => isBlockLike(ch));
   }
 
-  function buildRichRuns(el, baseColorHex, baseBold) {
-    const runs = [];
-    function walk(node, inheritedColor, inheritedBold) {
-      if (node.nodeType === 3) {
-        const txt = node.nodeValue.replace(/\s+/g, " ");
-        if (txt.trim()) {
-          runs.push({
-            text: txt,
-            options: {
-              color: inheritedColor || baseColorHex,
-              bold: inheritedBold
-            }
-          });
-        }
-        return;
+  // Preserve the browser's measured line breaks. Desktop font substitution must
+  // not wrap a four-character heading or split "50%" into separate lines.
+  function buildRenderedRuns(el, baseColorHex, baseBold) {
+    const lines=[];
+    const walker=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);
+    let node;
+    while((node=walker.nextNode())){
+      const parent=node.parentElement,style=getComputedStyle(parent);
+      if(style.display==="none" || style.visibility==="hidden")continue;
+      const weight=parseInt(style.fontWeight,10);
+      const options={color:parseColorToHex(style.color)||baseColorHex,bold:Number.isNaN(weight)?baseBold:weight>=600};
+      for(let i=0;i<node.nodeValue.length;i++){
+        const range=document.createRange();range.setStart(node,i);range.setEnd(node,i+1);
+        const rect=range.getBoundingClientRect();
+        if(rect.width<0.1 || rect.height<0.1)continue;
+        let line=lines.find(line=>Math.abs(line.y-rect.top)<3);
+        if(!line){line={y:rect.top,runs:[]};lines.push(line);}
+        let run=line.runs.at(-1);
+        if(!run || run.options.color!==options.color || run.options.bold!==options.bold){run={text:"",options:{...options}};line.runs.push(run);}
+        run.text+=node.nodeValue[i];
       }
-      if (node.nodeType !== 1) return;
-      const cs = getComputedStyle(node);
-      if (cs.display === "none" || cs.visibility === "hidden") return;
-      const cHex = parseColorToHex(cs.color) || inheritedColor;
-      const w = parseInt(cs.fontWeight, 10);
-      const isB = inheritedBold || (!Number.isNaN(w) && w >= 600) || node.tagName === "STRONG" || node.tagName === "B";
-      Array.from(node.childNodes).forEach((ch) => walk(ch, cHex, isB));
     }
-    walk(el, baseColorHex, baseBold);
+    lines.sort((a,b)=>a.y-b.y);
+    const runs=[];
+    lines.forEach((line,i)=>{
+      if(i>0 && runs.length)runs.at(-1).options.breakLine=true;
+      runs.push(...line.runs);
+    });
     return runs;
   }
 
@@ -253,10 +256,13 @@ window.SlidePptxExporter = (() => {
 
       const fillHex = parseColorToHex(cs.backgroundColor);
       const fillAlpha = parseAlpha(cs.backgroundColor);
-      const bwTop = parseFloat(cs.borderTopWidth) || 0;
-      const bwLeft = parseFloat(cs.borderLeftWidth) || 0;
-      const borderHex = bwTop > 0 ? parseColorToHex(cs.borderTopColor) : null;
-      const leftBorderHex = bwLeft >= 3 ? parseColorToHex(cs.borderLeftColor) : null;
+      const borders = ["Top", "Right", "Bottom", "Left"].map(side=>({
+        side, width:parseFloat(cs[`border${side}Width`]) || 0,
+        color:parseColorToHex(cs[`border${side}Color`]),style:cs[`border${side}Style`]
+      })).filter(b=>b.width>0 && b.color && b.style!=="none" && b.style!=="hidden");
+      const uniformBorder=borders.length===4 && borders.every(b=>b.width===borders[0].width && b.color===borders[0].color);
+      const borderHex=uniformBorder?borders[0].color:null;
+      const bwTop=uniformBorder?borders[0].width:0;
       const radiusPx = parseFloat(cs.borderRadius) || 0;
 
       // Pure thin divider line (< 6px tall)
@@ -278,7 +284,7 @@ window.SlidePptxExporter = (() => {
           y: toInY(rr.yPx),
           w: toInX(rr.wPx),
           h: toInY(rr.hPx),
-          line: borderHex ? { color: borderHex, width: Math.max(0.5, bwTop * 0.75) } : { type: "none" }
+          line: borderHex ? { color: borderHex, width: bwTop * PPT_W_IN / SLIDE_W_PX * 72 } : { type: "none" }
         };
         if (fillHex) {
           shapeOpts.fill = { color: fillHex, transparency: fillAlpha < 0.98 ? Math.round((1 - fillAlpha) * 100) : 0 };
@@ -290,16 +296,18 @@ window.SlidePptxExporter = (() => {
         s.addShape(shapeType, shapeOpts);
       }
 
-      if (leftBorderHex && bwLeft >= 3) {
-        s.addShape(pptx.ShapeType.rect, {
-          x: toInX(rr.xPx),
-          y: toInY(rr.yPx),
-          w: toInX(bwLeft),
-          h: toInY(rr.hPx),
-          fill: { color: leftBorderHex },
-          line: { type: "none" }
+      // A CSS top/left divider is not a rectangular outline.
+      if(!uniformBorder) for(const border of borders){
+        const horizontal=border.side==="Top" || border.side==="Bottom";
+        s.addShape(pptx.ShapeType.rect,{
+          x:toInX(rr.xPx+(border.side==="Right"?rr.wPx-border.width:0)),
+          y:toInY(rr.yPx+(border.side==="Bottom"?rr.hPx-border.width:0)),
+          w:toInX(horizontal?rr.wPx:border.width),
+          h:toInY(horizontal?border.width:rr.hPx),
+          fill:{color:border.color},line:{type:"none"}
         });
       }
+
     }
 
     // 5. Export each visible leaf text element as an individual PowerPoint TextBox
@@ -325,24 +333,28 @@ window.SlidePptxExporter = (() => {
       const colorHex = parseColorToHex(cs.color) || "141413";
       const weightNum = parseInt(cs.fontWeight, 10);
       const bold = !Number.isNaN(weightNum) ? weightNum >= 600 : (cs.fontWeight === "bold");
-      const fontSizePt = Math.max(8, Math.round(parseFloat(cs.fontSize) * 0.72));
+      // CSS pixels are stage coordinates, not physical 96-dpi pixels.
+      // 1280px maps to 10 inches, so 17px must become 9.5625pt, not 12pt.
+      const fontSizePt = parseFloat(cs.fontSize) * PPT_W_IN / SLIDE_W_PX * 72;
       const align = cs.textAlign === "center" ? "center" : (cs.textAlign === "right" ? "right" : "left");
 
-      const runs = buildRichRuns(el, colorHex, bold);
+      const runs = buildRenderedRuns(el, colorHex, bold);
       if (!runs.length) continue;
 
-      s.addText(runs.length === 1 ? runs[0].text : runs, {
+      s.addText(runs, {
         x: toInX(rr.xPx),
         y: toInY(rr.yPx),
-        w: Math.max(toInX(rr.wPx) + 0.14, 0.45),
-        h: Math.max(toInY(rr.hPx) + 0.05, 0.24),
+        w: Math.max(toInX(rr.wPx) + 0.04, 0.1),
+        h: Math.max(toInY(rr.hPx), 0.08),
         fontSize: fontSizePt,
         bold: runs.length === 1 ? runs[0].options.bold : undefined,
         color: runs.length === 1 ? runs[0].options.color : undefined,
         fontFace: "Microsoft JhengHei",
         align,
         valign: "middle",
-        margin: 1
+        margin: 0,
+        wrap: false,
+        lineSpacingMultiple: Math.max(1, (parseFloat(cs.lineHeight)||parseFloat(cs.fontSize)*1.2)/parseFloat(cs.fontSize))
       });
     }
 
@@ -402,7 +414,7 @@ window.SlidePptxExporter = (() => {
           const slideRoot = host.firstElementChild;
           if (!slideRoot) continue;
           const s = await renderSlideDomToPptxSlide(pptx, slideRoot, fallbackBg);
-          s.addNotes(`第 ${data.num} 頁（版面：${data.mode}）— ${data.title}`);
+          s.addNotes(data.notes || `第 ${data.num} 頁（版面：${data.mode}）— ${data.title}`);
         }
       }
     } finally {

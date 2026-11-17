@@ -15,26 +15,27 @@
   <script src="../engine/template-svgs.js"></script>
   <script src="../engine/content-state.js?v=adaptive-prose-1"></script>
   <script src="../engine/renderer.js?v=adaptive-prose-1"></script>
-  <script src="../engine/ziwei-deck.js?v=adaptive-prose-1"></script>
-  <script src="../engine/pptx-exporter.js"></script>
-  <script src="../engine/importer.js?v=controls-audit"></script>
+  <script src="../engine/pptx-exporter.js?v=stage-units-1"></script>
+  <script src="../engine/topics.js?v=nasa-example"></script>
   <script>
-    (() => {
+    (async () => {
+      await window.SlideTopicsReady;
       const SR = window.SlideRenderer;
       const KEY = "slide_atelier_v6_state";
-      window.SlideImporter.registerAllIntoRenderer(SR);
       const read = (raw) => { try { return JSON.parse(raw || "{}"); } catch { return {}; } };
       const saved = read(localStorage.getItem(KEY));
       const match = location.hash.match(/state=([^&]+)/);
       let fromHash = {};
       try { if (match) fromHash = read(decodeURIComponent(match[1])); } catch {}
-      const state = {topic:"ziwei-reading",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
+      const state = {topic:"cafe-brand",template:"editorial-magazine",page:0,pageOverrides:{},customHtmlByPage:{},...saved,...fromHash};
       const topicParam = new URLSearchParams(location.search).get("topic");
       let overridesByTopic={};try{overridesByTopic=read(localStorage.getItem("slide_atelier_content_by_topic"));}catch{}
       if (topicParam) { state.topic = topicParam; state.page = 0; state.pageOverrides = overridesByTopic[state.topic]||{}; }
       else if(overridesByTopic[state.topic]) state.pageOverrides=overridesByTopic[state.topic];
       if (!SR.TOPICS.some(t=>t.id===state.topic)) state.topic="cafe-brand";
       if (saved.topic !== state.topic) state.customHtmlByPage = {};
+      const queryStyle=new URLSearchParams(location.search).get("style");
+      if(queryStyle && SR.STYLE_PRESETS.some(p=>p.templateId===queryStyle))state.template=queryStyle;
       const tpl = SR.getTemplate({templateId:state.template});
       state.template=tpl.tplId; state.color=tpl.colorId; state.font=tpl.fontId;
       const recipe={templateId:state.template};
@@ -48,7 +49,7 @@
       plan.forEach((data,i)=>{
         const slide=document.createElement("section"); slide.className="slide";
         const cached=state.customHtmlByPage[`${state.topic}_${i}`];
-        slide.innerHTML=(state.topic!=="ziwei-reading" || cached?.includes('data-design-revision="adaptive-prose-1"')?cached:null) || SR.renderSlideInner(recipe,data);
+        slide.innerHTML=cached || SR.renderSlideInner(recipe,data);
         window.SlideContent.bind(slide,data);
         const notes=document.createElement("aside");notes.className="notes";notes.textContent=data.notes || "";slide.append(notes);deck.append(slide);
       });
@@ -68,8 +69,14 @@
       button.addEventListener("click",()=>{renderPanel();panel.classList.toggle("is-open");button.setAttribute("aria-expanded",String(panel.classList.contains("is-open")));});
       window.addEventListener("hashchange",()=>{if(panel.classList.contains("is-open"))renderPanel();});
       try{localStorage.setItem(KEY,JSON.stringify(state));}catch{}
-    })();
+      // Build every slide before the playback controller takes its slide snapshot.
+      await new Promise((resolve,reject)=>{
+        const playback=document.createElement("script");playback.src="../engine/deck.js?v=topic-ready";playback.onload=resolve;playback.onerror=()=>reject(new Error("無法載入簡報播放控制列。"));document.body.append(playback);
+      });
+    })().catch(error=>{
+      console.error(error);
+      const message=document.createElement("p");message.setAttribute("role","alert");message.textContent=error.message;message.style.cssText="padding:24px;color:#9e3232;background:#fff;position:fixed;bottom:0;z-index:9999;";document.body.append(message);
+    });
   </script>
-  <script src="../engine/deck.js?v=controls-audit"></script>
 </body>
 </html>
