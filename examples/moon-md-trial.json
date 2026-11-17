@@ -1,0 +1,257 @@
+{
+  "id": "moon-md-trial",
+  "shortLabel": "月球事實",
+  "label": "月球事實・MD獨立試作（7頁）",
+  "title": "月球保存了太陽系的歷史",
+  "preferredStyle": "academic-thesis",
+  "sources": [
+    {
+      "url": "https://science.nasa.gov/moon/facts/",
+      "title": "NASA Moon Facts",
+      "accessed": "2026-11-17",
+      "sections": [
+        "Size and Distance",
+        "Orbit and Rotation",
+        "Formation",
+        "Surface",
+        "Water on the Moon",
+        "Atmosphere",
+        "Potential for Life"
+      ],
+      "excerpt": "The Moon is Earth’s only natural satellite.",
+      "paraphrase": "以繁體中文重述尺度、同步自轉、形成假說、地形、水與環境；沒有逐段全文翻譯。"
+    }
+  ],
+  "workflow": {
+    "planning": "先讀AGENTS第1、3、5、6、7節與DESIGN_CATALOG，再讀NASA原始網頁；獨立規劃7頁：開場→尺度→運動→形成→地表→水→環境。",
+    "layoutDecision": "兩頁數值／分類資料採矩陣，兩頁演變採時間軸，兩頁並列概念採三欄；封面居中。不同單位不用比例條。",
+    "generation": "每頁3點，標題2–6字，說明18–25字，正文80–120字；不使用無關圖片。",
+    "validation": "語法、專案契約、自訂主題四風格渲染與瀏覽器截圖；PowerPoint另交主代理獨立驗收。"
+  },
+  "pages": [
+    {
+      "mode": "cover-centered",
+      "kicker": "NASA · MOON FACTS",
+      "title": "月球保存了太陽系的歷史",
+      "sub": "從地月尺度、形成過程到水的證據",
+      "summary": "岩石與冰共同留下歷史線索。",
+      "points": [
+        {
+          "num": "01",
+          "title": "地月關係",
+          "stat": "尺度",
+          "desc": "月球是地球唯一的天然衛星並持續繞行地球。",
+          "action": "先看位置"
+        },
+        {
+          "num": "02",
+          "title": "地質紀錄",
+          "stat": "撞擊",
+          "desc": "撞擊坑與冷卻熔岩保存了太陽系早期的線索。",
+          "action": "再讀地表"
+        },
+        {
+          "num": "03",
+          "title": "水的證據",
+          "stat": "極區",
+          "desc": "極區陰影與日照區的水證據改變乾燥的印象。",
+          "action": "辨識證據"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Moon Facts / Introduction。中文為AI依原始資料整理；數值沿用來源近似值。"
+    },
+    {
+      "mode": "matrix-table-split",
+      "kicker": "01 · 月球事實",
+      "title": "平均地月距離遠大於月球本身",
+      "sub": "半徑與距離分開比較，避免尺度混淆",
+      "summary": "地月間約可容納三十個地球。",
+      "points": [
+        {
+          "num": "01",
+          "title": "月球半徑",
+          "stat": "1,740 km",
+          "desc": "月球的寬度小於地球三分之一，可依半徑比較。",
+          "action": "大小"
+        },
+        {
+          "num": "02",
+          "title": "平均距離",
+          "stat": "384,400 km",
+          "desc": "地月平均相距約三十八萬四千四百公里。",
+          "action": "遠近"
+        },
+        {
+          "num": "03",
+          "title": "持續遠離",
+          "stat": "每年約1吋",
+          "desc": "月球每年遠離地球約一英吋，軌道並非固定不變。",
+          "action": "變化"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Size and Distance。中文為AI依原始資料整理；數值沿用來源近似值。"
+    },
+    {
+      "mode": "three-col-defense",
+      "kicker": "02 · 月球事實",
+      "title": "同一面朝向地球，不代表背面永遠黑暗",
+      "sub": "同步自轉與月相是兩件不同的事",
+      "summary": "月相反映日照方向與觀測位置。",
+      "points": [
+        {
+          "num": "01",
+          "title": "同步自轉",
+          "stat": "約27天",
+          "desc": "月球自轉與繞地球公轉速率相同，因此同面朝向地球。",
+          "action": "同面可見"
+        },
+        {
+          "num": "02",
+          "title": "月相週期",
+          "stat": "約29天",
+          "desc": "地球也繞太陽運動，使我們看到的月相週期較長。",
+          "action": "分清週期"
+        },
+        {
+          "num": "03",
+          "title": "背面日照",
+          "stat": "也有白晝",
+          "desc": "月球背面同樣會受到太陽照射，不能稱為永暗的一面。",
+          "action": "避免誤稱"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Orbit and Rotation。中文為AI依原始資料整理；數值沿用來源近似值。"
+    },
+    {
+      "mode": "horizontal-timeline",
+      "kicker": "03 · 月球事實",
+      "title": "撞擊後的碎屑逐步形成月球外殼",
+      "sub": "形成機制仍是科學推論，保留來源的不確定語氣",
+      "summary": "巨撞擊是月球形成的可能解釋。",
+      "points": [
+        {
+          "num": "01",
+          "title": "巨大撞擊",
+          "stat": "數十億年前",
+          "desc": "一個火星大小天體可能撞上地球，留下大量碎屑。",
+          "action": "保留可能"
+        },
+        {
+          "num": "02",
+          "title": "碎屑聚合",
+          "stat": "形成月球",
+          "desc": "地球與撞擊天體的碎屑聚集，初生月球處於熔融狀態。",
+          "action": "辨識來源"
+        },
+        {
+          "num": "03",
+          "title": "岩漿結晶",
+          "stat": "約一億年內",
+          "desc": "全球岩漿海大多結晶，低密度岩石上浮形成月殼。",
+          "action": "形成外殼"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Formation。中文為AI依原始資料整理；數值沿用來源近似值。"
+    },
+    {
+      "mode": "matrix-table-split",
+      "kicker": "04 · 月球事實",
+      "title": "亮暗地形記錄不同的月球地質歷程",
+      "sub": "高地、月海與撞擊坑提供互補證據",
+      "summary": "地形反映成分與年代差異。",
+      "points": [
+        {
+          "num": "01",
+          "title": "明亮高地",
+          "stat": "古老月殼",
+          "desc": "月球亮區稱為高地，岩石成分與暗色月海有所不同。",
+          "action": "對照地形"
+        },
+        {
+          "num": "02",
+          "title": "暗色月海",
+          "stat": "熔岩充填",
+          "desc": "撞擊盆地曾在四十二億至十二億年前被熔岩填滿。",
+          "action": "非海水"
+        },
+        {
+          "num": "03",
+          "title": "撞擊紀錄",
+          "stat": "保存數十億年",
+          "desc": "長期留存的撞擊坑記錄月球與內太陽系天體的撞擊史。",
+          "action": "閱讀歷史"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Surface。中文為AI依原始資料整理；數值沿用來源近似值。"
+    },
+    {
+      "mode": "horizontal-timeline",
+      "kicker": "05 · 月球事實",
+      "title": "水的發現讓月球不再只是乾燥世界",
+      "sub": "區分早期推定、極區證據與日照區分子水",
+      "summary": "探測補足了水分布的認識。",
+      "points": [
+        {
+          "num": "01",
+          "title": "早期判讀",
+          "stat": "初期探月",
+          "desc": "早期研究阿波羅與月球號帶回的樣本，認為月面乾燥。",
+          "action": "樣本有限"
+        },
+        {
+          "num": "02",
+          "title": "極區證據",
+          "stat": "2008年",
+          "desc": "月船一號偵測月面羥基分子，且在兩極更為集中。",
+          "action": "區分羥基"
+        },
+        {
+          "num": "03",
+          "title": "日照區水",
+          "stat": "2020年",
+          "desc": "空中天文台確認日照下的克拉維斯坑存在水分子。",
+          "action": "並非僅極區"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Water on the Moon。中文為AI依原始資料整理；數值沿用來源近似值。"
+    },
+    {
+      "mode": "three-col-defense",
+      "kicker": "06 · 月球事實",
+      "title": "月面缺乏地球式的環境保護",
+      "sub": "水的存在不等於已發現生命或適居環境",
+      "summary": "探月須防範稀薄大氣與溫差",
+      "points": [
+        {
+          "num": "01",
+          "title": "稀薄外氣",
+          "stat": "無法呼吸",
+          "desc": "月球外氣層極為稀薄，不能防護太陽輻射與流星體撞擊。",
+          "action": "需要防護"
+        },
+        {
+          "num": "02",
+          "title": "劇烈溫差",
+          "stat": "127至−173°C",
+          "desc": "月面日照區與黑暗區溫差劇烈，須辨別量測條件。",
+          "action": "溫差"
+        },
+        {
+          "num": "03",
+          "title": "生命證據",
+          "stat": "尚未發現",
+          "desc": "至今探月任務未發現月球有自身生命存在的證據。",
+          "action": "慎推定"
+        }
+      ],
+      "image": null,
+      "notes": "來源：https://science.nasa.gov/moon/facts/；段落：Atmosphere; Surface; Potential for Life。中文為AI依原始資料整理；數值沿用來源近似值。"
+    }
+  ]
+}
