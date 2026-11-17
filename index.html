@@ -520,9 +520,6 @@
       <span class="brand-title">Slide Atelier</span>
     </div>
     <nav class="top-actions">
-      <a class="btn" href="project.html">專案介紹與擴充規則</a>
-      <a class="btn" href="decks/showcase-20.html">AI 資安論文版</a>
-      <a class="btn" href="decks/01-design-atlas-20.html">Lumina 商業企劃版</a>
       <button type="button" class="btn btn-accent" id="downloadPptBtn">⬇ 下載可編輯 PPT (.pptx)</button>
       <a class="btn btn-primary" id="openDeckBtn" href="decks/studio-deck.html">放映與匯出 PDF →</a>
     </nav>
@@ -977,12 +974,15 @@
           `;
         }).join("");
 
-        const coreLayouts = SR.CORE_LAYOUTS.slice();
-        if (layoutObj && !coreLayouts.some((l) => l.id === layoutObj.id)) coreLayouts.push(layoutObj);
-        layoutSwitcher.innerHTML = coreLayouts.map((l) => `
+        const coreIds = new Set(SR.CORE_LAYOUTS.map((l) => l.id));
+        const allLayouts = [
+          ...SR.CORE_LAYOUTS,
+          ...(SR.COMPOUND_LAYOUTS || []).filter((l) => !coreIds.has(l.id))
+        ];
+        layoutSwitcher.innerHTML = allLayouts.map((l) => `
           <button type="button" class="layout-btn ${l.id === cur.mode ? "is-active" : ""}" data-layout="${l.id}" title="${l.desc}">
             <span class="layout-title">${l.label}</span>
-            <span class="layout-meta">${SR.CORE_LAYOUTS.some(core => core.id === l.id) ? "核心 · " : "延伸 · "}${l.cat}</span>
+            <span class="layout-meta">${coreIds.has(l.id) ? "核心 · " : "延伸 · "}${l.cat}</span>
           </button>
         `).join("");
 

@@ -2,7 +2,7 @@
 (() => {
   const base = new URL("../examples/", document.currentScript.src);
   window.SlideTopicsReady = (async () => {
-    for (const file of ["solar-system.json", "moon-md-trial.json"]) {
+    for (const file of ["solar-system.json", "moon-md-trial.json", "wmo-climate-2024.json"]) {
       const response = await fetch(new URL(file, base));
       if (!response.ok) throw new Error(`無法讀取簡報資料 ${file}，請重新整理頁面。`);
       const topic = await response.json();

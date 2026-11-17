@@ -1,0 +1,261 @@
+{
+  "id": "wmo-climate-2024",
+  "title": "2024 全球氣候創下高溫新紀錄",
+  "label": "WMO 2024 全球氣候報告（6頁）",
+  "shortLabel": "WMO 氣候報告",
+  "preferredStyle": "academic-thesis",
+  "chapters": [
+    "總覽",
+    "氣溫",
+    "氣體",
+    "海洋",
+    "冰川",
+    "衝擊"
+  ],
+  "sources": [
+    {
+      "title": "World Meteorological Organization (WMO) — State of the Global Climate 2024",
+      "url": "https://wmo.int/publication-series/state-of-the-global-climate-2024"
+    }
+  ],
+  "pages": [
+    {
+      "mode": "cover-centered",
+      "kicker": "WMO · 2024 全球氣候報告",
+      "title": "2024 全球氣候創下高溫新紀錄",
+      "sub": "單年均溫首度突破工業化前 1.5°C，海洋暖化與冰川消融同步加劇。",
+      "summary": "彙整世界氣象組織核心觀測。",
+      "points": [
+        {
+          "num": "01",
+          "title": "氣溫創高",
+          "stat": "1.55°C",
+          "desc": "2024年為百七十五年觀測史上最暖一年。",
+          "action": "十年入前十"
+        },
+        {
+          "num": "02",
+          "title": "海洋失衡",
+          "stat": "連8年",
+          "desc": "海洋熱含量連創紀錄，酸化與海面加速升。",
+          "action": "變化已鎖定"
+        },
+        {
+          "num": "03",
+          "title": "冰川遷徙",
+          "stat": "數百萬",
+          "desc": "冰川創最大三年損失，極端天氣引發遷徙。",
+          "action": "疊加危機"
+        }
+      ],
+      "image": null,
+      "notes": "資料來源：World Meteorological Organization (WMO) — State of the Global Climate 2024。中文整理自來源摘要，未添加任何未經證實之數值。"
+    },
+    {
+      "mode": "three-col-defense",
+      "kicker": "01 · 氣溫與暖化警訊",
+      "title": "2024 成為 175 年觀測史上最暖的一年",
+      "sub": "全球近地表平均氣溫距平達 1.55 ± 0.13 °C，可能為首個突破 1.5 °C 的曆年。",
+      "summary": "單年破線雖非長期失守，仍是**關鍵警訊**。",
+      "highlightStat": {
+        "value": "1.55 ± 0.13 °C",
+        "label": "2024 全球均溫距平",
+        "desc": "高於 1850–1900 年工業化前基準"
+      },
+      "points": [
+        {
+          "num": "01",
+          "title": "單年破線",
+          "stat": "1.55°C",
+          "desc": "近地表均溫較工業化前高出約一點五五度。",
+          "action": "首破1.5度"
+        },
+        {
+          "num": "02",
+          "title": "十年最暖",
+          "stat": "10年",
+          "desc": "過去十年間每一年皆名列史上最暖前十名。",
+          "action": "暖化持續"
+        },
+        {
+          "num": "03",
+          "title": "目標區辨",
+          "stat": "數十年",
+          "desc": "單年破線不代表巴黎協定長期目標已失效。",
+          "action": "嚴峻警訊"
+        }
+      ],
+      "image": null,
+      "notes": "資料來源：WMO State of the Global Climate 2024 — Temperature & Greenhouse Gases。氣溫距平為 1.55 ± 0.13 °C（相對於 1850–1900 基準）。"
+    },
+    {
+      "mode": "banner-3-rows",
+      "kicker": "02 · 溫室氣體濃度",
+      "title": "三大溫室氣體濃度全面刷新歷史高點",
+      "sub": "二氧化碳、甲烷與氧化亞氮濃度齊創新高，持續推升大氣暖化壓力。",
+      "summary": "**化石燃料**與土地改變，推高碳濃度。",
+      "points": [
+        {
+          "num": "01",
+          "title": "碳濃度高",
+          "stat": ">420",
+          "desc": "大氣二氧化碳遠高420ppm創八十萬年高。",
+          "action": "80萬年新高"
+        },
+        {
+          "num": "02",
+          "title": "氣體齊升",
+          "stat": "創紀錄",
+          "desc": "二氧化碳、甲烷與氧化亞氮濃度皆達高點。",
+          "action": "暖化加劇"
+        },
+        {
+          "num": "03",
+          "title": "人為驅動",
+          "stat": "兩主因",
+          "desc": "主要來自化石燃料燃燒與土地利用的改變。",
+          "action": "排放須減量"
+        }
+      ],
+      "image": null,
+      "notes": "資料來源：WMO State of the Global Climate 2024 — Temperature & Greenhouse Gases。二氧化碳濃度遠高於 420 ppm，為至少 80 萬年來最高。"
+    },
+    {
+      "mode": "matrix-table-split",
+      "kicker": "03 · 海洋暖化與海平面",
+      "title": "海洋熱含量連八年破紀錄，海平面加速上升",
+      "sub": "海表高溫引發強烈海洋熱浪，吸收二氧化碳亦使海洋酸化持續加劇。",
+      "summary": "融水與熱膨脹推升海面，**不可逆數百年**。",
+      "highlightStat": {
+        "value": "速率倍增",
+        "label": "全球平均海平面上升",
+        "desc": "自衛星測高觀測開始以來已翻倍"
+      },
+      "matrixTable": {
+        "headers": [
+          "海洋指標",
+          "觀測現況",
+          "主要驅動因素"
+        ],
+        "rows": [
+          [
+            "海洋熱含量",
+            "連 8 年破紀錄",
+            "大氣升溫與熱量吸收"
+          ],
+          [
+            "海表溫度",
+            "極端偏高",
+            "引發強烈海洋熱浪"
+          ],
+          [
+            "海洋酸化",
+            "持續加劇",
+            "海洋吸收更多二氧化碳"
+          ],
+          [
+            "海平面上升",
+            "速率倍增",
+            "冰川融化與海水熱膨脹"
+          ]
+        ],
+        "highlightRow": 3,
+        "highlightCol": 1,
+        "thresholdTitle": "海平面上升速率",
+        "thresholdStat": "已倍增",
+        "thresholdNote": "自衛星測高觀測開始以來（格陵蘭與南極融冰＋熱膨脹）",
+        "conclusionTitle": "長期不可逆警訊",
+        "conclusionBody": "世界氣象組織強調，海洋持續暖化與海平面上升已被鎖定，在數百年至數千年內皆不可逆。"
+      },
+      "points": [
+        {
+          "num": "01",
+          "title": "海洋吸熱",
+          "stat": "連8年",
+          "desc": "過去八年每年皆打破全球海洋熱含量紀錄。",
+          "action": "引發熱浪"
+        },
+        {
+          "num": "02",
+          "title": "高溫酸化",
+          "stat": "持續升",
+          "desc": "海表高溫且吸收更多碳導致海洋持續酸化。",
+          "action": "衝擊生態"
+        },
+        {
+          "num": "03",
+          "title": "海面倍增",
+          "stat": "已翻倍",
+          "desc": "格陵蘭與南極融冰及熱膨脹使上升倍增。",
+          "action": "千年難逆"
+        }
+      ],
+      "image": null,
+      "notes": "資料來源：WMO State of the Global Climate 2024 — Ocean Heat, Acidification & Sea Level。"
+    },
+    {
+      "mode": "before-after-compare",
+      "kicker": "04 · 冰川加速消融",
+      "title": "全球冰川創下有紀錄以來最大三年損失",
+      "sub": "2021 至 2024 年冰川質量大幅流失，多地出現嚴重負平衡。",
+      "summary": "近十年冰川加速退縮，推升海平面上升。",
+      "points": [
+        {
+          "num": "01",
+          "title": "三年最大",
+          "stat": "2021–24",
+          "desc": "二〇二一至二〇二四年創史上最大三年損失。",
+          "action": "加速退縮"
+        },
+        {
+          "num": "02",
+          "title": "負平衡多",
+          "stat": "十佔七",
+          "desc": "史上十個最負年質量平衡七個在2016年後。",
+          "action": "近年劇烈"
+        },
+        {
+          "num": "03",
+          "title": "多區重創",
+          "stat": "跨多洲",
+          "desc": "挪威、瑞典、冷岸群島與安地斯北美損失劇。",
+          "action": "極地高山"
+        }
+      ],
+      "image": null,
+      "notes": "資料來源：WMO State of the Global Climate 2024 — Glaciers & Human Displacement。"
+    },
+    {
+      "mode": "banner-3-rows",
+      "kicker": "05 · 極端天氣與人群衝擊",
+      "title": "極端天氣事件在 2024 年引發大規模流離失所",
+      "sub": "洪水、長期乾旱與熱帶氣旋衝擊全球數百萬人，並與既有衝突危機疊加。",
+      "summary": "氣候災害已成為**複合型人道危機**。",
+      "points": [
+        {
+          "num": "01",
+          "title": "極端災害",
+          "stat": "水旱風",
+          "desc": "洪水、長期乾旱與熱帶氣旋去年重創各地。",
+          "action": "多重衝擊"
+        },
+        {
+          "num": "02",
+          "title": "人群遷徙",
+          "stat": "數百萬",
+          "desc": "極端天氣引發廣泛人口流離失所波及百萬。",
+          "action": "被迫離家"
+        },
+        {
+          "num": "03",
+          "title": "危機疊加",
+          "stat": "衝突區",
+          "desc": "氣候衝擊為衝突與不穩定社區再加劇危機。",
+          "action": "風險放大"
+        }
+      ],
+      "image": null,
+      "notes": "資料來源：WMO State of the Global Climate 2024 — Glaciers & Human Displacement。"
+    }
+  ]
+}

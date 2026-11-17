@@ -55,7 +55,7 @@ try{
   await navigate('index.html');
   await evaluate('localStorage.clear();true');await navigate('index.html?topic=cafe-brand');
   await screenshot('studio-fixed.png');
-  results.checks.push({name:'original examples and 10 core layouts in studio',pass:await evaluate('["ai-security","cafe-brand","lumina-pitch"].every(id=>document.querySelector(`[data-topic="${id}"]`)) && document.querySelectorAll("#layoutSwitcher [data-layout]").length===10 && document.querySelector("#pageSelect").options.length===20')});
+  results.checks.push({name:'original examples and 30 layouts in studio',pass:await evaluate('["ai-security","cafe-brand","lumina-pitch"].every(id=>document.querySelector(`[data-topic="${id}"]`)) && document.querySelectorAll("#layoutSwitcher [data-layout]").length===30 && document.querySelector("#pageSelect").options.length===20')});
   const titlePosition=await evaluate(`(()=>{const r=document.querySelector('#stageFrame h1').getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2};})()`);
   await send('Input.dispatchMouseEvent',{type:'mousePressed',button:'left',clickCount:1,...titlePosition});
   await send('Input.dispatchMouseEvent',{type:'mouseReleased',button:'left',clickCount:1,...titlePosition});

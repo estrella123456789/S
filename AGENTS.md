@@ -15,6 +15,7 @@
 3. **內容充實且精煉（禁止空洞與文字牆）**：
    - 單頁內文總字數控制在 **80–120 字以內**，每頁安排 **3–4 個要點**；每個要點以 **2–6 字核心關鍵詞** 為標題（`title`），說明（`desc`）控制在 **18–25 字內**（可用 `**重點詞**` 標註強調），並補上具體指標或結論（`stat` / `action`）。
    - **數據與結構優先**：來源包含真實數字、百分比、步驟流程或優缺點對比時，優先選用對應的視覺化版面（比例條、時間軸、對比雙欄、矩陣表）；內容較多時拆分為多頁呈現，不編造假數據。
+   - **內容密度與容器自適應（Content-Driven Sizing）**：嚴禁讓少字數的卡片強制撐滿整頁高度（造成卡片內部出現大片空洞）。當卡片內文較精簡時，容器必須依內容收合為自然高度並於舞台垂直置中（`align-content: center`），內部元素緊密排列（`justify-content: flex-start`），讓留白留在卡片外部而非卡片內部。
    - 封面頁不顯示頁碼；內頁右下角依序顯示 `01..N`。
 
 ---
@@ -34,6 +35,7 @@ E:\slide-atelier\
 │   ├── content-state.js        # 內容欄位與舞台編修狀態保存
 │   ├── pptx-exporter.js        # 逐元素 DOM -> 原生 PowerPoint Shape/TextBox/Image 匯出
 │   ├── template-svgs.js        # 背景線繪與幾何裝飾 SVG 圖層
+│   ├── topics.js               # 共用主題載入器（將 examples/*.json 註冊至工作室與放映頁）
 │   └── renderer.js             # 核心渲染引擎：風格定義、Design Tokens 與多版面渲染
 ├── assets/                     # 簡報專用攝影與視覺素材
 └── decks/
@@ -74,6 +76,7 @@ E:\slide-atelier\
 - **時間軸與圖文**：`horizontal-timeline`（水平時間軸）、`photo-story-split`（圖片＋故事重點分欄）
 
 > 所有呈現元素皆須標記 `data-el="..."`，確保切換版面時內容不遺失，並能相容舞台拖拉編修與原生 `.pptx` 逐元素匯出。
+> 工作室（`index.html`）與放映頁（`decks/studio-deck.html`）皆開放對**每一頁**單獨切換全部 **30 種**可用版面（10 種核心＋20 種延伸）；非必要欄位（`dualGroups`、`matrixTable`、`r2Bars`、`image` 等）缺席時，各版面須由 `points` 優雅降級渲染，不得出現 `undefined`、`NaN` 或破版。
 
 ---
 
@@ -83,6 +86,10 @@ E:\slide-atelier\
 
 ```json
 {
+  "id": "topic-id-kebab-case",
+  "label": "簡報選單顯示名稱（含頁數）",
+  "shortLabel": "簡短名稱（匯出檔名用）",
+  "preferredStyle": "editorial-magazine",
   "title": "結論式簡報標題",
   "pages": [
     {
@@ -114,19 +121,25 @@ E:\slide-atelier\
 }
 ```
 
+> 進階結構選填欄位（僅於有真實對應資料時填寫，缺席時各版面須由 `points` 優雅降級）：
+> - `dualGroups`（`dual-nested-stat`）：`[{ "num": "01", "title": "群組標題", "stats": [{ "value": "35%", "label": "指標說明" }], "summary": "結論" }]`
+> - `matrixTable`（`matrix-table-split`）：`{ "headers": ["欄1", "欄2"], "rows": [["項目", "數值"]], "highlightRow": 0, "highlightCol": 1, "thresholdTitle": "門檻標題", "thresholdStat": "< 0.85" }`
+> - `r2Bars`（`bars-insight-split`）：`[{ "name": "指標名稱", "val": 72, "unit": "%", "desc": "補充說明" }]`
+
 ---
 
 ## 6. AI 擴充指南：如何持續新增主題與版面設計
 
 1. **新增簡報主題（三步驟工作流）**：
    - **步驟一（大綱規劃）**：先依來源素材規劃投影片頁數、每頁結論式標題與選用的版面 ID（同類內容維持相同版面，數據／流程／對比優先對應視覺化版面）。
-   - **步驟二（生成與註冊）**：依第 5 節標準格式建立 `examples/<topic>.json`（每頁 3–4 個結構完整要點，不編造數據或無關圖片），並透過註冊模組或 `engine/renderer.js` 註冊至 `TOPICS` 與 `getDeckPlan()`。
-   - **步驟三（雙重檢查）**：確認於 4 套鎖定風格及網頁版面切換下皆能完整渲染，並維持 `engine/content-state.js` 編修保存正常。
+   - **步驟二（生成與註冊）**：依第 5 節標準格式建立 `examples/<topic>.json`（含頂層 `id`、`label`、`shortLabel`、`preferredStyle`、`title`、`pages`，每頁 3–4 個結構完整要點，不編造數據或無關圖片），並將檔名加入 `engine/topics.js` 陣列（透過 `SlideRenderer.registerCustomTopic(topicObj)` 同步註冊至 `index.html` 與 `decks/studio-deck.html`；單純放置 JSON 檔不會自動出現在網頁選單）。
+   - **步驟三（雙重檢查）**：確認於 4 套鎖定風格及逐頁版面切換下皆能完整渲染，並維持 `engine/content-state.js` 編修保存正常。
 2. **新增版面設計（於網頁上切換不同呈現方式）**：
-   - 於 `engine/renderer.js` 的 `COMPOUND_LAYOUTS`（及 `CORE_LAYOUTS`）註冊新版面定義 `{ id, label, cat, desc }`。
-   - 實作對應渲染函數 `layoutXxx(c, tpl)` 並掛載至 `RENDER_BY_MODE`（與 `renderCompactProse` 視需求適配），所有文字與區塊加上 `data-el="..."` 屬性。
-   - 放映頁設定面板會顯示 `COMPOUND_LAYOUTS` 的版面；工作室以 `CORE_LAYOUTS` 為主。新增核心版面須同時註冊至核心清單，工作室才會自動顯示。
-3. **保護共用引擎**：
+   - 於 `engine/renderer.js` 的 `COMPOUND_LAYOUTS`（若屬核心精選則同步加入 `CORE_LAYOUT_IDS`）註冊新版面定義 `{ id, label, cat, desc }`。
+   - 實作對應渲染函數 `layoutXxx(c, tpl)` 並掛載至 `RENDER_BY_MODE`（與 `renderCompactProse` 視需求適配），所有文字與區塊加上 `data-el="..."` 屬性，且缺席選填欄位時能優雅降級。
+   - 工作室（`index.html`）與放映頁（`decks/studio-deck.html`）皆會讀取 `COMPOUND_LAYOUTS`（共 30 種），新增版面註冊後兩端皆可逐頁切換。
+3. **保護共用引擎與內容保存契約**：
+   - `engine/content-state.js` 負責內容欄位與舞台文字對應：使用者修改儲存在 `pageOverrides[頁碼].content`，單頁版面另存 `pageOverrides[頁碼].mode`；切換風格、版面、主題或前往放映頁時，嚴禁以清空內容的方式重新渲染。
    - 修改版面或新增主題時，維持 `engine/stage.css`、`engine/deck.js`、`engine/content-state.js` 與 `engine/pptx-exporter.js` 的等比舞台與逐元素匯出契約（透明背景維持 `null` 不轉為 `#000000`）。
 
 ---
@@ -140,7 +153,6 @@ E:\slide-atelier\
    - 使用無頭瀏覽器（Edge / Chrome `--headless=new --screenshot` 或 Playwright）輸出 `1280×720` 投影片與工作室畫面截圖，確認無文字溢出或重疊、單一視覺焦點、留白充足、對齊一致，且切換版面後內容完整保留。
 3. **實際 PowerPoint 檢查**：
    - 按網站下載按鈕取得 `.pptx`，再用 PowerPoint 開啟並輸出預覽；檢查字級、換行、圖表比例與邊框。檔案能解壓縮或包含文字物件，不等於視覺效果已通過。
-   - 舞台的 `1280px` 對應匯出的 `10in`；字級應依 `px × 10 / 1280 × 72` 換算成 pt，不能直接套一般螢幕的 px→pt 係數。保留網頁實際換行與各側邊框，透明底不可誤變黑底。
-   - 實際範例：`examples/solar-system.json` 保留來源、大綱、計算與七頁內容；`engine/topics.js` 共用載入資料。執行 `node tools/nasa-audit.mjs` 實際下載，再執行 `powershell -File tools/powerpoint-preview.ps1` 產生桌面 PowerPoint 預覽。放映控制列必須在主題資料與投影片建立完成後初始化。
+   - 舞台的 `1280px` 對應匯出的 `10in`；字級應依 `px × 10 / 1280 × 72` 換算成 pt，不能直接套一般螢幕的 px→pt 係數。保留網頁實際換行與各側邊框，透明底不可誤變黑底。放映控制列必須在主題資料與投影片建立完成後初始化。
 
 本機啟動：於專案根目錄執行 `python -m http.server 8765`，開啟 `http://127.0.0.1:8765/`。目前網站不提供文件匯入；新主題須依上述資料格式由 AI 註冊。畫面驗收：`node tools/browser-audit.mjs`；字體工具驗收：`node tools/typography-audit.mjs`。

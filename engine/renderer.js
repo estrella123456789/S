@@ -653,9 +653,10 @@ window.SlideRenderer = (() => {
 
   function layoutCoverFramedGrid(c, tpl) {
     const n = Math.max(1, c.pts.length);
+    const isCompact = c.pts.every((pt) => ((pt.desc || "").length + (pt.action || "").length) <= 45);
     return `<div style="flex:1;padding:24px 52px 24px;display:flex;flex-direction:column;position:relative;z-index:4;min-height:0;">
       <div style="flex:1;border:2px solid ${tpl.primary};border-radius:${tpl.radius}px;padding:7px;display:flex;min-height:0;">
-        <div style="flex:1;border:1px solid ${tpl.border};border-radius:${Math.max(0, tpl.radius - 4)}px;padding:24px 28px;display:flex;flex-direction:column;justify-content:space-between;background:${tpl.surface};">
+        <div style="flex:1;border:1px solid ${tpl.border};border-radius:${Math.max(0, tpl.radius - 4)}px;padding:24px 28px;display:flex;flex-direction:column;justify-content:${isCompact ? "center" : "space-between"};gap:${isCompact ? "20px" : "0"};background:${tpl.surface};">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
             <div>
               <span style="font-family:${tpl.monoFont};font-size:12px;color:${tpl.secondary};font-weight:700;">${escapeHtml(c.kicker)}</span>
@@ -667,13 +668,13 @@ window.SlideRenderer = (() => {
               <div style="font-size:13px;color:${tpl.muted};">${escapeHtml(c.hs.label)}</div>
             </div>` : ""}
           </div>
-          <div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:16px;flex:1;margin:18px 0;min-height:0;">
-            ${c.pts.map((pt) => `<div style="background:${tpl.bg};border:1px solid ${tpl.border};border-radius:${tpl.innerRadius}px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;">
+          <div style="display:grid;grid-template-columns:repeat(${n},1fr);gap:16px;${isCompact ? "align-content:center;" : "flex:1;margin:18px 0;"}min-height:0;">
+            ${c.pts.map((pt) => `<div style="background:${tpl.bg};border:1px solid ${tpl.border};border-radius:${tpl.innerRadius}px;padding:18px 16px;display:flex;flex-direction:column;justify-content:${isCompact ? "flex-start" : "space-between"};gap:${isCompact ? "10px" : "0"};">
               <div>
                 <div style="font-family:${tpl.monoFont};font-size:13px;font-weight:800;color:${tpl.secondary};">${escapeHtml(pt.num)}${pt.stat ? ` · ${escapeHtml(pt.stat)}` : ""}</div>
                 <div style="font-size:16.5px;font-weight:800;color:${tpl.fg};margin-top:6px;">${escapeHtml(pt.title)}</div>
               </div>
-              <p style="margin:8px 0;font-size:14px;color:${tpl.muted};line-height:1.55;">${formatRich(pt.desc, tpl.primary)}</p>
+              <p style="margin:${isCompact ? "0" : "8px 0"};font-size:14px;color:${tpl.muted};line-height:1.55;">${formatRich(pt.desc, tpl.primary)}</p>
               ${pt.action ? `<div style="font-size:12.5px;font-weight:700;color:${tpl.primary};border-top:1px dashed ${tpl.border};padding-top:8px;">▸ ${escapeHtml(pt.action)}</div>` : ""}
             </div>`).join("")}
           </div>
@@ -754,15 +755,16 @@ window.SlideRenderer = (() => {
   function layoutFourColNested(c, tpl) {
     const n = Math.max(1, c.pts.length);
     const circ = 2 * Math.PI * 38;
+    const isCompact = c.pts.every((pt) => ((pt.desc || "").length + (pt.action || "").length) <= 45);
     return `<div style="flex:1;padding:16px 48px 16px;display:flex;flex-direction:column;gap:16px;min-height:0;position:relative;z-index:4;">
       ${c.summary ? `<div style="border-left:4px solid ${tpl.primary};padding:4px 0 4px 16px;font-size:17px;color:${tpl.fg};line-height:1.5;flex-shrink:0;">${formatRich(c.summary, tpl.primary)}</div>` : ""}
-      <div style="flex:1;display:grid;grid-template-columns:repeat(${n},1fr);gap:16px;min-height:0;">
+      <div style="flex:1;display:grid;grid-template-columns:repeat(${n},1fr);gap:16px;min-height:0;${isCompact ? "align-content:center;" : ""}">
         ${c.pts.map((pt, i) => {
           const isFocal = i === 0;
           const pct = extractPct(pt.stat, i, 100);
           const dash = pct !== null ? Math.round((pct / 100) * circ) : 0;
           const accentColor = isFocal ? tpl.primary : tpl.fg;
-          return `<div style="${cardChromeCss(tpl, "card")}padding:24px 16px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;text-align:center;">
+          return `<div style="${cardChromeCss(tpl, "card")}padding:24px 16px;display:flex;flex-direction:column;justify-content:${isCompact ? "flex-start" : "space-between"};gap:16px;text-align:center;">
             <div>
               <div style="font-size:21px;font-weight:700;color:${accentColor};line-height:1.25;">${escapeHtml(pt.title)}</div>
               ${pt.statLabel ? `<div style="font-family:${tpl.monoFont};font-size:13px;color:${tpl.muted};margin-top:4px;">${escapeHtml(pt.statLabel)}</div>` : ""}
@@ -812,19 +814,20 @@ window.SlideRenderer = (() => {
   function layoutThreeColDefense(c, tpl) {
     const n = Math.max(1, c.pts.length);
     const hasRichBody = c.pts.some((pt) => pt.desc || pt.stat || pt.action);
-    const hasFooterOrStat = c.pts.some((pt) => pt.stat || pt.action);
+    const isCompactContent = c.pts.every((pt) => ((pt.desc || "").length + (pt.action || "").length) <= 45);
+    const stretchCards = hasRichBody && !isCompactContent;
     return `<div style="flex:1;padding:16px 48px 16px;display:flex;flex-direction:column;gap:16px;min-height:0;position:relative;z-index:4;">
       ${c.summary ? `<div style="border-left:4px solid ${tpl.primary};padding:4px 0 4px 16px;font-size:17px;color:${tpl.fg};line-height:1.5;flex-shrink:0;">${formatRich(c.summary, tpl.primary)}</div>` : ""}
-      <div style="flex:1;display:grid;grid-template-columns:repeat(${n},1fr);gap:24px;min-height:0;${hasFooterOrStat ? "" : "align-content:center;"}">
+      <div style="flex:1;display:grid;grid-template-columns:repeat(${n},1fr);gap:24px;min-height:0;${stretchCards ? "" : "align-content:center;"}">
         ${c.pts.map((pt, i) => {
           const isFocal = i === 0;
-          return `<div style="${cardChromeCss(tpl, "card")}padding:${hasFooterOrStat ? "24px" : "28px 24px"};display:flex;flex-direction:column;justify-content:${hasFooterOrStat ? "space-between" : "flex-start"};gap:16px;">
+          return `<div style="${cardChromeCss(tpl, "card")}padding:${stretchCards ? "24px" : "24px 24px 20px"};display:flex;flex-direction:column;justify-content:${stretchCards ? "space-between" : "flex-start"};gap:${stretchCards ? "16px" : "14px"};">
             <div style="display:flex;align-items:center;justify-content:space-between;${hasRichBody ? `padding-bottom:14px;border-bottom:1px solid ${tpl.border};` : ""}">
               <div style="display:flex;align-items:center;gap:12px;">${badgeHtml(pt.num, tpl, isFocal, 32)}<strong style="font-size:21px;font-weight:700;color:${isFocal ? tpl.primary : tpl.fg};">${escapeHtml(pt.title)}</strong></div>
               ${pt.statLabel ? `<span style="font-family:${tpl.monoFont};font-size:13px;font-weight:600;color:${tpl.muted};">${escapeHtml(pt.statLabel)}</span>` : ""}
             </div>
             ${pt.stat ? `<div style="font-family:${tpl.titleFont};font-size:32px;font-weight:800;color:${isFocal ? tpl.primary : tpl.fg};line-height:1.15;">${escapeHtml(pt.stat)}</div>` : ""}
-            ${pt.desc ? `<p style="margin:0;font-size:17px;line-height:1.65;color:${tpl.fg};${hasFooterOrStat ? "flex:1;display:flex;align-items:center;" : ""}">${formatRich(pt.desc, tpl.primary)}</p>` : ""}
+            ${pt.desc ? `<p style="margin:0;font-size:17px;line-height:1.65;color:${tpl.fg};${stretchCards ? "flex:1;display:flex;align-items:center;" : ""}">${formatRich(pt.desc, tpl.primary)}</p>` : ""}
             ${pt.action ? `<div style="border-top:1px solid ${tpl.border}66;padding-top:12px;">
               <div style="font-size:13px;font-weight:700;color:${isFocal ? tpl.primary : tpl.muted};margin-bottom:4px;">▸ 重點結論</div>
               <div style="font-size:13px;line-height:1.5;color:${tpl.muted};">${escapeHtml(pt.action)}</div>
